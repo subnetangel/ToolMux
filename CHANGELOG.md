@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2025-09-01
+
+### Fixed
+- **Version Consistency**: Fixed version string inconsistency where package was 1.1.2 but binary reported 1.1.1
+- **Runtime Version**: All version strings now correctly report 1.1.3 in both package metadata and binary output
+
+### Changed
+- **Repository URLs**: Updated all GitHub repository references from `jpruiz/toolmux` to `subnetangel/ToolMux`
+- **Project URLs**: Updated PyPI project URLs to point to correct GitHub repository
+- **Documentation**: Updated installation instructions and documentation links
+
+### Technical Details
+- Updated `pyproject.toml` project URLs (Homepage, Repository, Issues)
+- Updated README.md installation commands for Git-based installation
+- Updated help text in CLI to reference correct repository
+- Updated all documentation files with correct GitHub URLs
+- Synchronized version strings between pyproject.toml and source code
+
 ## [1.1.1] - 2025-09-01
 
 ### Fixed

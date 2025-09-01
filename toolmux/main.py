@@ -303,7 +303,7 @@ class ToolMux:
                 "result": {
                     "protocolVersion": "2024-11-05",
                     "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "ToolMux", "version": "1.1.1"}
+                    "serverInfo": {"name": "ToolMux", "version": "1.1.3"}
                 }
             }
         
@@ -487,7 +487,7 @@ def setup_first_run():
         return config_file
     
     # First run setup
-    print("ToolMux v1.1.1 - First run detected")
+    print("ToolMux v1.1.3 - First run detected")
     
     # Create config directory
     config_dir.mkdir(exist_ok=True)
@@ -630,7 +630,7 @@ def main():
     parser.add_argument(
         "--version", 
         action="version", 
-        version="ToolMux 1.1.1"
+        version="ToolMux 1.1.3"
     )
     parser.add_argument(
         "--list-servers",

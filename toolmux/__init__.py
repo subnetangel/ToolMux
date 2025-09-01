@@ -5,5 +5,5 @@ Reduces token usage by 98.65% while maintaining full functionality
 
 from .main import main, ToolMux, HttpMcpClient
 
-__version__ = "1.1.1"
+__version__ = "1.1.3"
 __all__ = ["main", "ToolMux", "HttpMcpClient"]
