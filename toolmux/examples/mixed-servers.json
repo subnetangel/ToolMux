@@ -1,0 +1,33 @@
+{
+  "servers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user"],
+      "description": "Local filesystem access via stdio"
+    },
+    "brave-search": {
+      "command": "uvx",
+      "args": ["mcp-server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "your-brave-api-key-here"
+      },
+      "description": "Web search via stdio"
+    },
+    "remote-api": {
+      "transport": "http",
+      "base_url": "https://api.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer your-token-here",
+        "Content-Type": "application/json"
+      },
+      "timeout": 30,
+      "description": "Remote HTTP MCP server"
+    },
+    "local-http": {
+      "transport": "http",
+      "base_url": "http://localhost:8080",
+      "timeout": 15,
+      "description": "Local HTTP MCP server"
+    }
+  }
+}

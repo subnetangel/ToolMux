@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "sqlite": {
+      "command": "uvx",
+      "args": ["mcp-server-sqlite", "--db-path", "/path/to/your/database.sqlite"],
+      "env": {
+        "DEBUG": "false"
+      },
+      "description": "SQLite database access and queries"
+    }
+  }
+}

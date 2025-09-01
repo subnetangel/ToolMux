@@ -1,0 +1,24 @@
+{
+  "servers": {
+    "atlassian-remote": {
+      "transport": "http",
+      "base_url": "https://mcp.atlassian.com",
+      "headers": {
+        "Authorization": "Bearer your-oauth-token"
+      },
+      "timeout": 30,
+      "description": "Atlassian remote MCP server"
+    },
+    "custom-api": {
+      "transport": "http",
+      "base_url": "https://your-api.example.com/mcp",
+      "headers": {
+        "X-API-Key": "your-api-key",
+        "User-Agent": "ToolMux/1.1.1"
+      },
+      "timeout": 20,
+      "sse_endpoint": "/events",
+      "description": "Custom HTTP MCP server with SSE support"
+    }
+  }
+}

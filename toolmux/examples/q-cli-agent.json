@@ -1,0 +1,98 @@
+{
+  "name": "q-cli-toolmux-agent",
+  "description": "Q CLI Agent with ToolMux v1.1.1 - Efficient MCP server aggregation",
+  "version": "1.1.1",
+  "mcpServers": {
+    "toolmux": {
+      "command": "uvx",
+      "args": ["toolmux@1.1.1"],
+      "timeout": 30000,
+      "description": "ToolMux MCP server aggregator with 98.65% token reduction",
+      "env": {
+        "TOOLMUX_CONFIG": "~/toolmux/mcp.json"
+      }
+    }
+  },
+  "tools": [
+    "catalog_tools",
+    "get_tool_schema", 
+    "invoke",
+    "get_tool_count"
+  ],
+  "resources": [
+    "file://./AGENT_INSTRUCTIONS.md"
+  ],
+  "systemPrompt": "You are an AI assistant with access to multiple MCP servers through ToolMux. ToolMux aggregates all backend servers into 4 efficient meta-tools:\n\n1. **catalog_tools** - Discover all available tools across servers\n2. **get_tool_schema** - Get parameters for any tool\n3. **invoke** - Execute any tool with arguments\n4. **get_tool_count** - View efficiency statistics\n\nAlways start with catalog_tools to see what's available, then use get_tool_schema to understand parameters before invoking tools. This approach reduces token usage by 98.65% compared to loading all tool schemas upfront.",
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "echo",
+        "args": ["🚀 ToolMux v1.1.1 agent ready - 4 meta-tools available"],
+        "timeout_ms": 1000
+      }
+    ],
+    "beforeInvoke": [
+      {
+        "command": "echo", 
+        "args": ["💡 Using ToolMux meta-tool for efficient execution"],
+        "timeout_ms": 500
+      }
+    ]
+  },
+  "settings": {
+    "maxTokens": 8192,
+    "temperature": 0.7,
+    "enableStreaming": true,
+    "toolMux": {
+      "enabled": true,
+      "configPath": "~/toolmux/mcp.json",
+      "onDemandLoading": true,
+      "tokenOptimization": true
+    }
+  },
+  "examples": {
+    "workflow": [
+      "1. catalog_tools - See all available tools",
+      "2. get_tool_schema({\"name\": \"tool_name\"}) - Get parameters", 
+      "3. invoke({\"name\": \"tool_name\", \"args\": {...}}) - Execute tool",
+      "4. get_tool_count - View efficiency stats"
+    ],
+    "sampleCommands": {
+      "discoverTools": "catalog_tools",
+      "getFileSchema": "get_tool_schema({\"name\": \"read_file\"})",
+      "readFile": "invoke({\"name\": \"read_file\", \"args\": {\"path\": \"/tmp/test.txt\"}})",
+      "searchWeb": "invoke({\"name\": \"brave_search\", \"args\": {\"query\": \"AI news\"}})",
+      "viewStats": "get_tool_count"
+    }
+  },
+  "alternativeConfigs": {
+    "localInstall": {
+      "mcpServers": {
+        "toolmux": {
+          "command": "python",
+          "args": ["-m", "toolmux.main"],
+          "cwd": "/path/to/toolmux",
+          "timeout": 30000
+        }
+      }
+    },
+    "specificVersion": {
+      "mcpServers": {
+        "toolmux": {
+          "command": "uvx",
+          "args": ["toolmux@1.1.1"],
+          "timeout": 30000
+        }
+      }
+    },
+    "withCustomConfig": {
+      "mcpServers": {
+        "toolmux": {
+          "command": "uvx",
+          "args": ["toolmux", "--config", "/custom/path/mcp.json"],
+          "timeout": 30000
+        }
+      }
+    }
+  }
+}

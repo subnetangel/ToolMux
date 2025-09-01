@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "brave-search": {
+      "command": "uvx",
+      "args": ["mcp-server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "your-brave-api-key-here"
+      },
+      "description": "Web search using Brave Search API"
+    }
+  }
+}

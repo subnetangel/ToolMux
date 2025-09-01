@@ -1,0 +1,40 @@
+{
+  "name": "toolmux-agent",
+  "description": "AI Agent with ToolMux v1.1.1 - 98.65% token efficiency",
+  "version": "1.1.1",
+  "mcpServers": {
+    "toolmux": {
+      "command": "uvx",
+      "args": ["toolmux"],
+      "timeout": 30000,
+      "description": "ToolMux MCP server aggregator - exposes 4 meta-tools for efficient access to all backend servers"
+    }
+  },
+  "tools": ["*"],
+  "resources": [
+    "file://./AGENT_INSTRUCTIONS.md"
+  ],
+  "systemPrompt": "You are an AI assistant with access to multiple tools through ToolMux. ToolMux provides 4 meta-tools that give you efficient access to all backend MCP servers with 98.65% token reduction. Always use catalog_tools first to discover available tools, then get_tool_schema for parameters, and invoke to execute tools.",
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "echo",
+        "args": ["ToolMux v1.1.1 agent initialized with 4 meta-tools"],
+        "timeout_ms": 1000,
+        "max_output_size": 256
+      }
+    ]
+  },
+  "settings": {
+    "maxTokens": 4096,
+    "temperature": 0.7,
+    "enableToolMux": true,
+    "toolMuxConfig": "~/toolmux/mcp.json"
+  },
+  "examples": {
+    "discoverTools": "Use catalog_tools to see all available tools across servers",
+    "getSchema": "Use get_tool_schema({\"name\": \"read_file\"}) to get tool parameters",
+    "executeTools": "Use invoke({\"name\": \"read_file\", \"args\": {\"path\": \"/tmp/test.txt\"}}) to run tools",
+    "getStats": "Use get_tool_count to see efficiency statistics"
+  }
+}

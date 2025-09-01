@@ -1,0 +1,13 @@
+{
+  "name": "simple-toolmux-agent",
+  "description": "Simple Q CLI agent with ToolMux - just the essentials",
+  "mcpServers": {
+    "toolmux": {
+      "command": "uvx",
+      "args": ["toolmux"],
+      "timeout": 30000
+    }
+  },
+  "tools": ["*"],
+  "systemPrompt": "You have access to tools through ToolMux. Use catalog_tools to see available tools, get_tool_schema to understand parameters, and invoke to execute tools."
+}

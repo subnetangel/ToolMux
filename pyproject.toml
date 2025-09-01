@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "toolmux"
+version = "1.1.1"
+description = "Efficient MCP server aggregation with HTTP/SSE support and 98.65% token reduction"
+authors = [{name = "JP Ruiz", email = "jpruiz@gmail.com"}]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Networking",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Environment :: Console",
+]
+keywords = ["mcp", "model-context-protocol", "multiplexer", "aggregation", "toolmux", "ai", "agents", "tools"]
+
+dependencies = [
+    "fastmcp>=0.2.0",
+    "click>=8.0.0",
+    "pydantic>=2.6.0",
+    "httpx>=0.24.0",
+    "websockets>=11.0.0",
+    "python-dotenv>=1.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+server = [
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/jpruiz/toolmux"
+Repository = "https://github.com/jpruiz/toolmux"
+Issues = "https://github.com/jpruiz/toolmux/issues"
+
+[project.scripts]
+toolmux = "toolmux.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["toolmux*"]
+
+[tool.setuptools.package-data]
+toolmux = ["examples/*.json"]

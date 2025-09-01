@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user"],
+      "description": "Local filesystem access - read, write, and manage files"
+    }
+  }
+}
