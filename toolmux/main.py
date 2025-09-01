@@ -621,7 +621,7 @@ def load_config(config_path: str = None) -> Dict[str, Dict[str, Any]]:
 def main():
     parser = argparse.ArgumentParser(
         description="ToolMux - Efficient MCP server aggregation with 98.65% token reduction",
-        epilog="For more information, visit: https://github.com/jpruiz/toolmux"
+        epilog="For more information, visit: https://github.com/subnetangel/ToolMux"
     )
     parser.add_argument(
         "--config", 

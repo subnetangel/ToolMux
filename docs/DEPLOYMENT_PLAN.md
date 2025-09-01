@@ -47,7 +47,7 @@
 
 2. **Git Installation Testing**:
    ```bash
-   uvx --from git+https://github.com/jpruiz/toolmux toolmux
+   uvx --from git+https://github.com/subnetangel/ToolMux toolmux
    ```
 
 3. **Validation**:
@@ -99,12 +99,12 @@ ToolMux v1.1.0 - First run detected
 ### Alternative Approaches (Fallback Options)
 
 #### Option 2: Git Direct Install
-- **Command**: `uvx --from git+https://github.com/jpruiz/toolmux toolmux`
+- **Command**: `uvx --from git+https://github.com/subnetangel/ToolMux toolmux`
 - **Use Case**: Testing, pre-release versions, development
 - **Benefits**: No PyPI dependency, can install from branches/tags
 
 #### Option 3: GitHub Releases + Wheel
-- **Command**: `uvx --from https://github.com/jpruiz/toolmux/releases/download/v1.1.0/toolmux-1.1.0-py3-none-any.whl toolmux`
+- **Command**: `uvx --from https://github.com/subnetangel/ToolMux/releases/download/v1.1.0/toolmux-1.1.0-py3-none-any.whl toolmux`
 - **Use Case**: Controlled distribution, enterprise environments
 - **Benefits**: No PyPI dependency, version control
 
@@ -242,7 +242,7 @@ toolmux
 uv tool install toolmux
 
 # Install from git (development)
-uvx --from git+https://github.com/jpruiz/toolmux toolmux
+uvx --from git+https://github.com/subnetangel/ToolMux toolmux
 
 # Install specific version
 uvx toolmux@1.1.0

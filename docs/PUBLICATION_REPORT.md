@@ -160,7 +160,7 @@ uvx toolmux@1.1.1 --version
 
 - **PyPI Package**: https://pypi.org/project/toolmux/1.1.1/
 - **Installation**: `uvx toolmux@1.1.1`
-- **GitHub**: https://github.com/jpruiz/toolmux
+- **GitHub**: https://github.com/subnetangel/ToolMux
 - **Documentation**: Included in package
 
 **ToolMux 1.1.1 is now live and ready for production use!** 🚀

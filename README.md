@@ -72,7 +72,7 @@ uv tool install toolmux
 
 #### Install from Git (Development)
 ```bash
-uvx --from git+https://github.com/jpruiz/toolmux toolmux
+uvx --from git+https://github.com/subnetangel/ToolMux toolmux
 ```
 
 #### Install Specific Version
@@ -83,8 +83,8 @@ uvx toolmux@1.1.1
 #### Manual Install (Development)
 ```bash
 # Clone the repository
-git clone https://github.com/jpruiz/toolmux.git
-cd toolmux
+git clone https://github.com/subnetangel/ToolMux.git
+cd ToolMux
 
 # Install dependencies
 pip install -r requirements.txt

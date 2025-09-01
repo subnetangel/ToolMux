@@ -47,9 +47,9 @@ server = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jpruiz/toolmux"
-Repository = "https://github.com/jpruiz/toolmux"
-Issues = "https://github.com/jpruiz/toolmux/issues"
+Homepage = "https://github.com/subnetangel/ToolMux"
+Repository = "https://github.com/subnetangel/ToolMux"
+Issues = "https://github.com/subnetangel/ToolMux/issues"
 
 [project.scripts]
 toolmux = "toolmux.main:main"
