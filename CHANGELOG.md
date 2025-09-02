@@ -81,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
+- **1.1.3**: Version consistency fixes and GitHub repository URL updates
 - **1.1.1**: Bug fixes for empty input handling and improved UX
 - **1.1.0**: PyPI publication with first-run setup and CLI improvements  
 - **1.0.0**: Initial release with core MCP aggregation functionality

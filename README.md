@@ -58,10 +58,10 @@ That's it! ToolMux will auto-configure on first run.
 
 **🎉 Now available on PyPI: https://pypi.org/project/toolmux/**
 
-### Latest Updates (v1.1.1)
-- ✅ **Fixed**: Empty input handling - no more error messages when pressing Enter
-- ✅ **Improved**: Interactive mode with helpful guidance messages
-- ✅ **Enhanced**: Better first-time user experience
+### Latest Updates (v1.1.3)
+- ✅ **Fixed**: Version consistency between package metadata and binary output
+- ✅ **Updated**: All GitHub repository URLs to correct location
+- ✅ **Improved**: Synchronized version strings across all components
 
 ### Alternative Methods
 
@@ -77,7 +77,7 @@ uvx --from git+https://github.com/subnetangel/ToolMux toolmux
 
 #### Install Specific Version
 ```bash
-uvx toolmux@1.1.1
+uvx toolmux@1.1.3
 ```
 
 #### Manual Install (Development)
@@ -327,7 +327,7 @@ See `toolmux/examples/q-cli-agent.json` for a comprehensive Q CLI configuration 
 #### Available Examples
 - `q-cli-simple.json` - Minimal configuration to get started
 - `q-cli-agent.json` - Complete configuration with all features
-- `example_agent_config.json` - Legacy example (updated for v1.1.1)
+- `example_agent_config.json` - Legacy example (updated for v1.1.3)
 
 ### Other AI Clients
 Include `AGENT_INSTRUCTIONS.md` in your agent's system prompt to ensure proper meta-tool usage.

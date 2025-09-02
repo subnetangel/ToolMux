@@ -59,7 +59,7 @@ If you get "Tool not found" errors:
 
 ## Transport Support
 
-ToolMux v1.1.1+ supports **mixed transport configurations**:
+ToolMux v1.1.3+ supports **mixed transport configurations**:
 
 ### Supported Transports
 - **stdio**: Traditional subprocess-based MCP servers
