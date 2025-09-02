@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ToolMux - Efficient MCP server aggregation with on-demand loading
-Reduces token usage by 95% while maintaining full functionality
+Reduces schema token overhead by 98% while maintaining full functionality
 Supports both stdio and HTTP/SSE MCP servers
 """
 import json
@@ -106,7 +106,7 @@ class HttpMcpClient:
         init_response = self.call_rpc("initialize", {
             "protocolVersion": "2024-11-05",
             "capabilities": {},
-            "clientInfo": {"name": "ToolMux", "version": "1.0.0"}
+            "clientInfo": {"name": "ToolMux", "version": "1.2.1"}
         })
         
         if "error" in init_response:
@@ -219,7 +219,7 @@ class ToolMux:
                     "params": {
                         "protocolVersion": "2024-11-05",
                         "capabilities": {},
-                        "clientInfo": {"name": "ToolMux", "version": "1.0.0"}
+                        "clientInfo": {"name": "ToolMux", "version": "1.2.1"}
                     }
                 }
                 
@@ -303,7 +303,7 @@ class ToolMux:
                 "result": {
                     "protocolVersion": "2024-11-05",
                     "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "ToolMux", "version": "1.1.3"}
+                    "serverInfo": {"name": "ToolMux", "version": "1.2.1"}
                 }
             }
         
@@ -487,7 +487,7 @@ def setup_first_run():
         return config_file
     
     # First run setup
-    print("ToolMux v1.1.3 - First run detected")
+    print("ToolMux v1.2.1 - First run detected")
     
     # Create config directory
     config_dir.mkdir(exist_ok=True)
@@ -496,21 +496,40 @@ def setup_first_run():
     # Create examples directory
     examples_dir.mkdir(exist_ok=True)
     
-    # Copy examples from package if available, otherwise create basic ones
+    # Copy all bundled resources from package
     try:
-        # Try to copy from package examples
-        package_examples = Path(__file__).parent / "examples"
+        package_dir = Path(__file__).parent
+        
+        # Copy examples
+        package_examples = package_dir / "examples"
         if package_examples.exists():
             for example_file in package_examples.glob("*.json"):
                 shutil.copy2(example_file, examples_dir / example_file.name)
+            print(f"✅ Installed example configurations: {examples_dir}")
         else:
             # Create basic examples if package examples not available
             create_basic_examples(examples_dir)
-    except Exception:
-        # Create basic examples if package examples not available
+            print(f"✅ Created basic example configurations: {examples_dir}")
+        
+        # Copy Prompt folder
+        package_prompt = package_dir / "Prompt"
+        user_prompt = config_dir / "Prompt"
+        if package_prompt.exists():
+            shutil.copytree(package_prompt, user_prompt, dirs_exist_ok=True)
+            print(f"✅ Installed agent instructions: {user_prompt}")
+        
+        # Copy scripts folder
+        package_scripts = package_dir / "scripts"
+        user_scripts = config_dir / "scripts"
+        if package_scripts.exists():
+            shutil.copytree(package_scripts, user_scripts, dirs_exist_ok=True)
+            print(f"✅ Installed scripts: {user_scripts}")
+            
+    except Exception as e:
+        # Create basic examples if package resources not available
         create_basic_examples(examples_dir)
-    
-    print(f"✅ Installed example configurations: {examples_dir}")
+        print(f"⚠️  Could not copy package resources: {e}")
+        print(f"✅ Created basic example configurations: {examples_dir}")
     
     # Create default config
     default_config = {
@@ -630,7 +649,7 @@ def main():
     parser.add_argument(
         "--version", 
         action="version", 
-        version="ToolMux 1.1.3"
+        version="ToolMux 1.2.1"
     )
     parser.add_argument(
         "--list-servers",

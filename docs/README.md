@@ -4,6 +4,9 @@ This directory contains comprehensive documentation for the ToolMux project.
 
 ## 📚 Documentation Index
 
+### Architecture & Design
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Comprehensive design and architecture document
+
 ### Release Documentation
 - **[FIX_SUMMARY.md](FIX_SUMMARY.md)** - Summary of the v1.1.1 empty input bug fix
 - **[PUBLICATION_REPORT.md](PUBLICATION_REPORT.md)** - Detailed PyPI publication report for v1.1.1
@@ -11,28 +14,29 @@ This directory contains comprehensive documentation for the ToolMux project.
 
 ### Development & Deployment
 - **[DEPLOYMENT_PLAN.md](DEPLOYMENT_PLAN.md)** - Original deployment strategy and PyPI publication plan
-- **[TEST_RESULTS.md](TEST_RESULTS.md)** - Comprehensive testing results and validation
 
 ## 🎯 Quick Reference
 
 ### For Users
 - **Installation**: See main [README.md](../README.md)
+- **Architecture**: See [ARCHITECTURE.md](ARCHITECTURE.md) for technical details
 - **Bug Fixes**: See [FIX_SUMMARY.md](FIX_SUMMARY.md) for latest improvements
 - **PyPI Package**: https://pypi.org/project/toolmux/
 
 ### For Developers
+- **System Design**: See [ARCHITECTURE.md](ARCHITECTURE.md) for comprehensive technical documentation
 - **Release Process**: See [GIT_COMMIT_CHECKLIST.md](GIT_COMMIT_CHECKLIST.md)
-- **Testing**: See [TEST_RESULTS.md](TEST_RESULTS.md)
 - **Deployment**: See [DEPLOYMENT_PLAN.md](DEPLOYMENT_PLAN.md)
 
 ### For Contributors
+- **Technical Overview**: See [ARCHITECTURE.md](ARCHITECTURE.md) for implementation details
 - **Latest Changes**: See [PUBLICATION_REPORT.md](PUBLICATION_REPORT.md)
 - **Development Setup**: See main [README.md](../README.md)
 - **Agent Instructions**: See [AGENT_INSTRUCTIONS.md](../AGENT_INSTRUCTIONS.md)
 
 ## 📋 Document Status
 
-All documentation is current as of **ToolMux v1.1.3** (September 1, 2025):
+All documentation is current as of **ToolMux v1.2.1** (September 2, 2025):
 
 - ✅ **Up-to-date**: All version references and examples
 - ✅ **Comprehensive**: Complete coverage of features and fixes

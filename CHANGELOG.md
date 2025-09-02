@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2025-09-02
+
+### Fixed
+- **First-Run Setup**: Fixed first-time setup to copy all bundled resources to user directory
+- **Resource Deployment**: Now properly copies `Prompt/` and `scripts/` folders during initial setup
+- **User Experience**: Users now get complete local copies of all bundled resources
+
+### Technical Details
+- Enhanced `setup_first_run()` function to copy all package resources
+- Added proper error handling for resource copying
+- Improved setup messages to show what resources were installed
+
+### User Impact
+- **Before**: Only `examples/` folder copied to `~/toolmux/`
+- **After**: All folders (`examples/`, `Prompt/`, `scripts/`) copied to `~/toolmux/`
+- **Result**: Complete local access to all ToolMux resources after installation
+
+## [1.2.0] - 2025-09-02
+
+### Changed
+- **Package Structure**: Moved `Prompt/` and `scripts/` folders into `toolmux/` package directory
+- **Installation Improvements**: Agent instructions and scripts now included in uv/uvx installations
+- **Documentation Updates**: Updated all documentation to reflect new package structure
+
+### Added
+- **Bundled Resources**: `AGENT_INSTRUCTIONS.md` and `toolmux_hook.sh` now included in package installation
+- **Package Data**: Added Prompt and scripts folders to setuptools package data configuration
+
+### Technical Details
+- Moved `Prompt/AGENT_INSTRUCTIONS.md` to `toolmux/Prompt/AGENT_INSTRUCTIONS.md`
+- Moved `scripts/toolmux_hook.sh` to `toolmux/scripts/toolmux_hook.sh`
+- Updated `pyproject.toml` package data to include new folders
+- Updated README.md with instructions to find bundled resources after installation
+- Maintained backward compatibility for existing configurations
+
+### User Impact
+- **Before**: Agent instructions and scripts were separate files not included in package
+- **After**: All resources bundled with package installation, accessible via Python module path
+
 ## [1.1.3] - 2025-09-01
 
 ### Fixed
@@ -12,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Runtime Version**: All version strings now correctly report 1.1.3 in both package metadata and binary output
 
 ### Changed
-- **Repository URLs**: Updated all GitHub repository references to `subnetangel/ToolMux`
+- **Repository URLs**: Updated all GitHub repository references from `jpruiz/toolmux` to `subnetangel/ToolMux`
 - **Project URLs**: Updated PyPI project URLs to point to correct GitHub repository
 - **Documentation**: Updated installation instructions and documentation links
 
@@ -81,6 +120,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
+- **1.2.1**: Fixed first-time setup to copy all bundled resources
+- **1.2.0**: Package structure improvements with bundled resources
 - **1.1.3**: Version consistency fixes and GitHub repository URL updates
 - **1.1.1**: Bug fixes for empty input handling and improved UX
 - **1.1.0**: PyPI publication with first-run setup and CLI improvements  

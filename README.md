@@ -58,10 +58,10 @@ That's it! ToolMux will auto-configure on first run.
 
 **🎉 Now available on PyPI: https://pypi.org/project/toolmux/**
 
-### Latest Updates (v1.1.3)
-- ✅ **Fixed**: Version consistency between package metadata and binary output
-- ✅ **Updated**: All GitHub repository URLs to correct location
-- ✅ **Improved**: Synchronized version strings across all components
+### Latest Updates (v1.2.1)
+- ✅ **Fixed**: First-time setup now properly copies all bundled resources (`Prompt/`, `scripts/`, `examples/`)
+- ✅ **Enhanced**: Complete local access to agent instructions and scripts after installation
+- ✅ **Improved**: Better user experience with all resources available in `~/toolmux/`
 
 ### Alternative Methods
 
@@ -77,7 +77,7 @@ uvx --from git+https://github.com/subnetangel/ToolMux toolmux
 
 #### Install Specific Version
 ```bash
-uvx toolmux@1.1.3
+uvx toolmux@1.2.1
 ```
 
 #### Manual Install (Development)
@@ -325,21 +325,38 @@ See `toolmux/examples/q-cli-agent.json` for a comprehensive Q CLI configuration 
 - Alternative installation methods
 
 #### Available Examples
+After installation, examples are available in the package:
+```bash
+# Find example configurations
+python -c "import toolmux; import os; print(os.path.join(os.path.dirname(toolmux.__file__), 'examples'))"
+```
+
 - `q-cli-simple.json` - Minimal configuration to get started
 - `q-cli-agent.json` - Complete configuration with all features
-- `example_agent_config.json` - Legacy example (updated for v1.1.3)
+- `example_agent_config.json` - Legacy example (updated for v1.2.1)
 
 ### Other AI Clients
-Include `AGENT_INSTRUCTIONS.md` in your agent's system prompt to ensure proper meta-tool usage.
+Include the agent instructions from the installed package to ensure proper meta-tool usage:
+
+```bash
+# After installing with uvx/uv, find the instructions at:
+python -c "import toolmux; import os; print(os.path.join(os.path.dirname(toolmux.__file__), 'Prompt', 'AGENT_INSTRUCTIONS.md'))"
+```
 
 ## Files Included
 
-- `toolmux.py` - Main multiplexer server
-- `mcp.json` - Default server configuration  
-- `example_mcp.json` - Extended configuration examples
-- `toolmux_hook.sh` - Q CLI agent hook
-- `AGENT_INSTRUCTIONS.md` - Agent behavior guide
-- `example_agent_config.json` - Complete Q CLI config
+### Core Package
+- `toolmux/main.py` - Main multiplexer server
+- `toolmux/examples/` - Configuration examples and templates
+- `toolmux/Prompt/AGENT_INSTRUCTIONS.md` - Agent behavior guide
+- `toolmux/scripts/toolmux_hook.sh` - Q CLI agent hook
+
+### Configuration Files
+- `mcp.json` - Default server configuration (created on first run)
+- Example configurations in `toolmux/examples/`:
+  - `q-cli-simple.json` - Minimal Q CLI setup
+  - `q-cli-agent.json` - Complete Q CLI configuration
+  - `example_agent_config.json` - Legacy example (updated for v1.2.1)
 
 ## Benefits
 
