@@ -32,7 +32,7 @@ This directory contains comprehensive documentation for the ToolMux project.
 
 ## 📋 Document Status
 
-All documentation is current as of **ToolMux v1.1.1** (September 1, 2025):
+All documentation is current as of **ToolMux v1.1.3** (September 1, 2025):
 
 - ✅ **Up-to-date**: All version references and examples
 - ✅ **Comprehensive**: Complete coverage of features and fixes
