@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Runtime Version**: All version strings now correctly report 1.1.3 in both package metadata and binary output
 
 ### Changed
-- **Repository URLs**: Updated all GitHub repository references from `jpruiz/toolmux` to `subnetangel/ToolMux`
+- **Repository URLs**: Updated all GitHub repository references to `subnetangel/ToolMux`
 - **Project URLs**: Updated PyPI project URLs to point to correct GitHub repository
 - **Documentation**: Updated installation instructions and documentation links
 
