@@ -359,21 +359,243 @@ Perfect for:
 
 ## Architecture
 
+### System Overview
+
+```mermaid
+graph TB
+    subgraph "AI Client Layer"
+        QCli["Q CLI Agent"]
+        Claude["Claude Desktop"]
+        Custom["Custom AI Client"]
+    end
+    
+    subgraph "ToolMux Core"
+        TM["ToolMux Server<br/>(4 Meta-Tools)"]
+        Cache["Tool Cache"]
+        Router["Protocol Router"]
+    end
+    
+    subgraph "MCP Server Layer"
+        subgraph "Stdio Servers"
+            FS["Filesystem<br/>Server"]
+            SQLite["SQLite<br/>Server"]
+            Git["Git<br/>Server"]
+        end
+        
+        subgraph "HTTP/SSE Servers"
+            API1["Remote API<br/>Server"]
+            Search["Search<br/>Service"]
+            Cloud["Cloud<br/>Service"]
+        end
+    end
+    
+    QCli -.->|stdio| TM
+    Claude -.->|stdio| TM
+    Custom -.->|stdio| TM
+    
+    TM --> Cache
+    TM --> Router
+    
+    Router -->|stdio| FS
+    Router -->|stdio| SQLite
+    Router -->|stdio| Git
+    Router -->|HTTP/SSE| API1
+    Router -->|HTTP/SSE| Search
+    Router -->|HTTP/SSE| Cloud
+    
+    style TM fill:#e1f5fe
+    style Router fill:#f3e5f5
+    style Cache fill:#e8f5e8
 ```
-┌─────────────────┐    ┌──────────────────┐
-│   AI Assistant  │    │     ToolMux      │
-│                 │◄──►│  (4 meta-tools)  │
-│ 1.35% token use │    │                  │
-└─────────────────┘    └──────────┬───────┘
-                                  │
-                       ┌──────────▼───────────┐
-                       │    On-Demand Load    │
-                       │                      │
-                       ▼                      ▼
-                ┌─────────────┐        ┌─────────────┐
-                │ Filesystem  │        │ Brave Search│
-                │   Server    │        │   Server    │
-                └─────────────┘        └─────────────┘
+
+### Token Usage Comparison
+
+```mermaid
+pie title Token Usage: Traditional vs ToolMux
+    "Traditional: Schema Loading" : 18.65
+    "Traditional: Actual Work" : 81.35
+    "ToolMux: Meta-Tools" : 1.35
+    "ToolMux: Actual Work" : 98.65
+```
+
+### Mixed Transport Architecture
+
+```mermaid
+graph LR
+    subgraph "Client"
+        Agent["AI Agent<br/>(Q CLI)"]
+    end
+    
+    subgraph "ToolMux"
+        Core["ToolMux Core<br/>stdio interface"]
+        HTTP["HTTP Client"]
+        Stdio["Stdio Manager"]
+    end
+    
+    subgraph "MCP Servers"
+        S1["Local Server 1<br/>(stdio)"]
+        S2["Local Server 2<br/>(stdio)"]
+        S3["Remote Server 1<br/>(HTTP)"]
+        S4["Remote Server 2<br/>(SSE)"]
+    end
+    
+    Agent -->|stdio| Core
+    Core --> HTTP
+    Core --> Stdio
+    
+    Stdio -->|subprocess| S1
+    Stdio -->|subprocess| S2
+    HTTP -->|HTTPS| S3
+    HTTP -->|WebSocket/SSE| S4
+    
+    style Core fill:#e1f5fe
+    style HTTP fill:#fff3e0
+    style Stdio fill:#e8f5e8
+```
+
+## Interaction Flow
+
+### Tool Discovery and Execution Flow
+
+```mermaid
+sequenceDiagram
+    participant Agent as AI Agent
+    participant TM as ToolMux
+    participant Cache as Tool Cache
+    participant Server as MCP Server
+    
+    Note over Agent,Server: 1. Discovery Phase
+    Agent->>TM: catalog_tools()
+    TM->>Cache: Check cached tools
+    alt Cache Miss
+        TM->>Server: Start server (on-demand)
+        Server-->>TM: Server ready
+        TM->>Server: List tools
+        Server-->>TM: Tool list
+        TM->>Cache: Cache tools
+    else Cache Hit
+        Cache-->>TM: Return cached tools
+    end
+    TM-->>Agent: All available tools
+    
+    Note over Agent,Server: 2. Schema Retrieval
+    Agent->>TM: get_tool_schema({"name": "read_file"})
+    TM->>Cache: Check schema cache
+    alt Schema Cached
+        Cache-->>TM: Return schema
+    else Schema Not Cached
+        TM->>Server: Get tool schema
+        Server-->>TM: Tool schema
+        TM->>Cache: Cache schema
+    end
+    TM-->>Agent: Tool schema
+    
+    Note over Agent,Server: 3. Tool Execution
+    Agent->>TM: invoke({"name": "read_file", "args": {...}})
+    TM->>Server: Execute tool
+    Server-->>TM: Tool result
+    TM-->>Agent: Execution result
+```
+
+### HTTP vs Stdio Server Handling
+
+```mermaid
+flowchart TD
+    Start([Tool Request]) --> Check{Server Type?}
+    
+    Check -->|stdio| StdioFlow[Stdio Flow]
+    Check -->|HTTP| HTTPFlow[HTTP Flow]
+    
+    subgraph "Stdio Processing"
+        StdioFlow --> StartProc[Start subprocess]
+        StartProc --> SendJSON[Send JSON-RPC]
+        SendJSON --> ReadResp[Read response]
+        ReadResp --> StdioResult[Return result]
+    end
+    
+    subgraph "HTTP Processing"
+        HTTPFlow --> HTTPReq[HTTP Request]
+        HTTPReq --> Auth[Add authentication]
+        Auth --> SendHTTP[Send to endpoint]
+        SendHTTP --> ParseHTTP[Parse response]
+        ParseHTTP --> HTTPResult[Return result]
+    end
+    
+    StdioResult --> End([Result to Agent])
+    HTTPResult --> End
+    
+    style StdioFlow fill:#e8f5e8
+    style HTTPFlow fill:#fff3e0
+```
+
+### On-Demand Server Loading
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: ToolMux starts
+    
+    Idle --> CheckCache: Tool request received
+    CheckCache --> ServerRunning: Server already running
+    CheckCache --> StartServer: Server not running
+    
+    StartServer --> Initializing: Launch server process
+    Initializing --> Ready: Server responds
+    Initializing --> Failed: Server fails to start
+    
+    Ready --> ServerRunning: Server available
+    ServerRunning --> ExecuteTool: Forward request
+    ExecuteTool --> ServerRunning: Tool executed
+    
+    ServerRunning --> Idle: Request complete
+    Failed --> [*]: Error returned
+    
+    note right of StartServer
+        Only starts when
+        tool is requested
+    end note
+    
+    note right of ServerRunning
+        Server stays running
+        for subsequent requests
+    end note
+```
+
+### Error Handling Flow
+
+```mermaid
+flowchart TD
+    Request[Tool Request] --> Validate{Valid Request?}
+    
+    Validate -->|No| ValidationError[Return validation error]
+    Validate -->|Yes| FindServer{Server exists?}
+    
+    FindServer -->|No| ServerError[Return server not found]
+    FindServer -->|Yes| CheckRunning{Server running?}
+    
+    CheckRunning -->|No| StartServer[Start server]
+    CheckRunning -->|Yes| ExecuteTool[Execute tool]
+    
+    StartServer --> StartSuccess{Start successful?}
+    StartSuccess -->|No| StartError[Return startup error]
+    StartSuccess -->|Yes| ExecuteTool
+    
+    ExecuteTool --> ToolSuccess{Tool executed?}
+    ToolSuccess -->|No| ToolError[Return execution error]
+    ToolSuccess -->|Yes| Success[Return result]
+    
+    ValidationError --> ErrorResponse[Format error response]
+    ServerError --> ErrorResponse
+    StartError --> ErrorResponse
+    ToolError --> ErrorResponse
+    
+    ErrorResponse --> End[Return to agent]
+    Success --> End
+    
+    style ValidationError fill:#ffebee
+    style ServerError fill:#ffebee
+    style StartError fill:#ffebee
+    style ToolError fill:#ffebee
+    style Success fill:#e8f5e8
 ```
 
 ## License
