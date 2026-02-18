@@ -709,7 +709,8 @@ The `"servers"` field format is unchanged - full backwards compatibility.
 
 ### Update `requirements.txt`:
 ```
-fastmcp>=2.3.0
+fastmcp>=2.14.0,<3
+mcp>=1.20.0
 httpx>=0.24.0
 python-dotenv>=1.0.1
 ```
@@ -717,7 +718,8 @@ python-dotenv>=1.0.1
 ### Update `pyproject.toml` dependencies:
 ```toml
 dependencies = [
-    "fastmcp>=2.3.0",
+    "fastmcp>=2.14.0,<3",
+    "mcp>=1.20.0",
     "httpx>=0.24.0",
     "python-dotenv>=1.0.1",
 ]
@@ -725,7 +727,21 @@ dependencies = [
 
 **Removed**: `click` (FastMCP handles CLI), `pydantic` (comes with FastMCP), `websockets` (comes with FastMCP)
 
-**Changed**: `fastmcp>=0.2.0` → `fastmcp>=2.3.0` (the installed version is 2.14.5, and we need features from 2.x)
+**Changed**: `fastmcp>=0.2.0` → `fastmcp>=2.14.0,<3` (pinned to latest stable 2.x series; see section 13 for 3.0 migration path)
+
+**Added**: `mcp>=1.20.0` - explicit dependency on MCP SDK (previously only transitive via FastMCP)
+
+### Why Pin `<3`
+
+FastMCP 3.0 (currently RC2, Feb 2026) introduces breaking changes including the provider/transform
+architecture redesign. Key incompatibilities:
+- `FastMCPProxy` is replaced by `ProxyProvider`
+- Constructor kwargs like `ui=` changed to `app=` with `AppConfig`
+- 16 `FastMCP()` constructor kwargs removed
+- `fastmcp dev` became `fastmcp dev inspector`
+
+We should adopt 3.0 features in a separate major version (ToolMux 3.0) after FastMCP 3.0 reaches
+stable release. See section 13 for the migration roadmap.
 
 ---
 
@@ -882,3 +898,53 @@ These tests should still pass in `--mode meta`. For proxy mode, tests should ver
 6. **Backwards compatible**: Old mcp.json configs work without changes
 7. **Existing tests**: Pass with `--mode meta`
 8. **Token efficiency**: Meta 93-99%, Proxy 55-75%, Gateway 87-92% (measured vs full passthrough)
+
+---
+
+## 13. FASTMCP 3.0 MIGRATION ROADMAP
+
+FastMCP 3.0 (currently 3.0.0rc2, Feb 2026) introduces a provider/transform architecture that aligns
+closely with ToolMux's goals. When 3.0 reaches stable, ToolMux should adopt it as v3.0.
+
+### FastMCP 2.14.x Features Used by ToolMux v2 (Current)
+
+| Feature | ToolMux Usage |
+|---------|---------------|
+| `FastMCP(name, instructions, version)` | Server with embedded agent instructions |
+| `@mcp.tool()` decorator | Meta-tool registration (catalog_tools, invoke, etc.) |
+| `FastMCP.as_proxy(backend)` | One-liner to proxy each backend server |
+| `server.mount(other_server, prefix=)` | Compose multiple backends into one server |
+| `MCPConfig` / `StdioMCPServer` / `RemoteMCPServer` | Native mcp.json parsing |
+| `ProxyToolManager` | Auto-discover + route tools from backends |
+| `ToolTransformConfig` | Rename tools on collision, filter by tags |
+| `compress_schema()` | Built-in schema compression (prune titles, defs, additionalProperties) |
+| `server.run(transport="stdio")` | Replaces manual stdin/stdout JSON-RPC loop |
+| `Tool.from_function()` / `add_tool()` | Dynamic tool registration for proxy mode |
+
+### FastMCP 3.0 Features for ToolMux v3 (Future)
+
+| 3.0 Feature | ToolMux Benefit |
+|-------------|----------------|
+| **ProxyProvider** | Replaces `FastMCPProxy` — cleaner, composable provider for each backend |
+| **TransformingProvider** | Apply schema condensation as middleware without modifying tool sources |
+| **FileSystemProvider** | Auto-discover backend configs from a directory of mcp.json files |
+| **Component versioning** (`@tool(version="2.0")`) | Evolve tool APIs across ToolMux versions |
+| **`tool_concurrency` parameter** | Concurrent execution across aggregated backends |
+| **Session-scoped state** (`ctx.set_state/get_state`) | Per-client `_described_tools` tracking (progressive disclosure) |
+| **`ctx.enable_components()`** | Dynamic per-session tool visibility |
+| **ResourcesAsTools / PromptsAsTools** | Expose backend resources and prompts through tool-only clients |
+| **Background tasks (Docket)** | Long-running backend operations with progress reporting |
+| **`--reload` flag** | Dev-time auto-restart when config or code changes |
+| **OpenTelemetry tracing** | Distributed tracing across ToolMux → backend calls |
+
+### Migration Steps (ToolMux v2 → v3)
+
+1. Wait for FastMCP 3.0 stable release (not RC)
+2. Update dependency: `fastmcp>=3.0.0,<4`
+3. Replace `FastMCPProxy` with `ProxyProvider` for each backend
+4. Replace manual schema condensation with `TransformingProvider` middleware
+5. Replace `_described_tools` set with session-scoped state
+6. Add `tool_concurrency` for parallel backend execution
+7. Consider `FileSystemProvider` for config-driven backend discovery
+8. Update tests for new provider API
+9. Bump ToolMux to v3.0.0

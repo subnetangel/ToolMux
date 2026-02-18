@@ -121,7 +121,8 @@ make clean                       # Remove __pycache__, .pyc, .egg-info
 ## Dependencies
 
 ### Runtime
-- `fastmcp>=0.2.0` - MCP protocol runtime
+- `fastmcp>=2.14.0,<3` - MCP server/client framework (proxy, mount, tool transforms, schema compression)
+- `mcp>=1.20.0` - MCP protocol SDK (types, transports, session management)
 - `click>=8.0.0` - CLI interface
 - `pydantic>=2.6.0` - Data validation
 - `httpx>=0.24.0` - HTTP client
