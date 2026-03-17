@@ -144,6 +144,56 @@ class HttpMcpClient:
             
         return response.get("result", {"error": "No result returned"})
 
+def read_mcp_message(stdout) -> Optional[Dict[str, Any]]:
+    """Read a JSON-RPC response from an MCP server's stdout.
+    
+    Supports both Content-Length framed messages (used by Go/Rust MCP SDKs)
+    and bare newline-delimited JSON (used by Node.js MCP SDKs).
+    
+    Skips MCP notification messages (no 'id' field) that servers may send
+    asynchronously (e.g. notifications/resources/list_changed).
+    
+    The MCP specification (https://spec.modelcontextprotocol.io/specification/basic/transports/#stdio)
+    requires Content-Length framing for stdio transport, but many Node.js servers
+    emit bare JSON lines instead.
+    """
+    while True:
+        msg = _read_one_mcp_message(stdout)
+        if msg is None:
+            return None
+        # Skip notifications (no 'id' field) — we only want responses
+        if "id" in msg:
+            return msg
+        # Otherwise it's a notification, keep reading
+
+
+def _read_one_mcp_message(stdout) -> Optional[Dict[str, Any]]:
+    """Read a single JSON-RPC message, handling both framing formats."""
+    while True:
+        line = stdout.readline()
+        if not line:
+            return None
+        
+        stripped = line.strip()
+        if not stripped:
+            continue
+        
+        # Check for Content-Length header (official MCP stdio framing)
+        if stripped.lower().startswith("content-length:"):
+            content_length = int(stripped.split(":", 1)[1].strip())
+            # Read until empty line (end of headers)
+            while True:
+                header_line = stdout.readline().strip()
+                if not header_line:
+                    break
+            # Read exact content_length chars
+            body = stdout.read(content_length)
+            return json.loads(body)
+        
+        # Bare JSON line (newline-delimited, non-standard but common)
+        return json.loads(stripped)
+
+
 class ToolMux:
     def __init__(self, servers_config: Dict[str, Dict[str, Any]]):
         self.servers = servers_config
@@ -225,7 +275,7 @@ class ToolMux:
                 
                 server.stdin.write(json.dumps(init_request) + "\n")
                 server.stdin.flush()
-                server.stdout.readline()
+                read_mcp_message(server.stdout)
                 
                 init_notif = {"jsonrpc": "2.0", "method": "notifications/initialized"}
                 server.stdin.write(json.dumps(init_notif) + "\n")
@@ -235,9 +285,8 @@ class ToolMux:
                 server.stdin.write(json.dumps(tools_request) + "\n")
                 server.stdin.flush()
                 
-                response_line = server.stdout.readline()
-                if response_line:
-                    response = json.loads(response_line)
+                response = read_mcp_message(server.stdout)
+                if response:
                     if "result" in response and "tools" in response["result"]:
                         for tool in response["result"]["tools"]:
                             tool["_server"] = server_name
@@ -282,9 +331,8 @@ class ToolMux:
             server.stdin.write(json.dumps(request) + "\n")
             server.stdin.flush()
             
-            response_line = server.stdout.readline()
-            if response_line:
-                response = json.loads(response_line)
+            response = read_mcp_message(server.stdout)
+            if response:
                 return response.get("result", {"error": "No result"})
             
         except Exception as e:
