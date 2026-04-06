@@ -164,8 +164,8 @@ All backend tools exposed directly with condensed descriptions. Most transparent
 Limit which tools a server exposes:
 ```json
 {
-  "command": "aws-sentral-mcp",
-  "args": ["--include-tools", "search_accounts,get_account_details,search_pfrs"]
+  "command": "brave-search",
+  "args": ["--include-tools", "search,get_local_results,get_news"]
 }
 ```
 
@@ -239,7 +239,7 @@ Get tool count statistics by server.
 
 ```
 get_tool_count()
-→ {"total_tools": 258, "by_server": {"builder-mcp": 46, "aws-sentral-mcp": 74, ...}}
+→ {"total_tools": 258, "by_server": {"github-mcp": 46, "brave-search": 74, ...}}
 ```
 
 ### `list_all_tools` (Gateway only)
@@ -248,7 +248,7 @@ Enumerate all tool names and descriptions grouped by server.
 
 ```
 list_all_tools()                    → All tools from all servers
-list_all_tools(server="builder-mcp") → Only builder-mcp tools
+list_all_tools(server="github-mcp") → Only github-mcp tools
 ```
 
 ## Description Cache

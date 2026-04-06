@@ -66,16 +66,13 @@ cp toolmux/examples/example_mcp.json ~/toolmux/mcp.json
 $EDITOR ~/toolmux/mcp.json
 ```
 
-## 🔧 Enterprise MCP Servers Included
+## 🔧 Example MCP Servers Included
 
-All examples include these real enterprise MCP servers:
+All examples can be customized to include your preferred MCP servers:
 
-- **`ent-support-genai-mcp`**: AWS Enterprise Support AI tools
-- **`awslabs.aws-documentation-mcp-server`**: AWS documentation search
-- **`strands`**: Strands agents MCP server
-- **`builder-mcp`**: Amazon Builder tools
-- **`k2-mcp-server`**: K2 integration tools
-- **`dante-mcp-server`**: Dante integration tools
+- **`filesystem`**: Local filesystem access tools
+- **`brave-search`**: Brave search integration
+- **`github-mcp`**: GitHub repository tools
 - **`url-to-markdown`**: Convert URLs to markdown
 - **`outlook-mcp-server`**: Outlook for Mac integration
 
@@ -90,13 +87,13 @@ sed -i 's|/Users/user/|/Users/yourusername/|g' ~/toolmux/mcp.json
 
 ### 2. Add Credentials
 Update placeholder credentials:
-- `your-quip-token-here` → Your actual Quip API token
+- `your-api-token-here` → Your actual API token
 - `user@example.com` → Your actual email address
 
 ### 3. Adjust Development Paths
 Update paths to match your development setup:
 - `/Users/user/dev/mcp/` → Your MCP development directory
-- `/Users/user/workplace/` → Your workplace directory
+- `/Users/user/projects/` → Your projects directory
 
 ### 4. Configure Server Status
 Use the `disabled` flag to control which servers are active:

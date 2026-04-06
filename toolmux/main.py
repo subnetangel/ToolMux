@@ -631,7 +631,7 @@ def register_manage_tool(mcp: FastMCP, config_path: Path, config: Dict[str, Any]
           manage_servers(action="add", name="my-mcp", command="my-mcp-server", description="My MCP")
           manage_servers(action="remove", name="my-mcp")
           manage_servers(action="validate")
-          manage_servers(action="test", name="builder-mcp")
+          manage_servers(action="test", name="my-server")
         """
         servers = config.get("servers", {})
 

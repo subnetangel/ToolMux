@@ -1,6 +1,6 @@
 {
   "name": "toolmux-agent",
-  "description": "Technical Account Manager - Strategic & Technical Excellence",
+  "description": "AI Assistant - MCP Tool Integration",
   "prompt": null,
   "mcpServers": {
     "toolmux": {

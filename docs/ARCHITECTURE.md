@@ -210,7 +210,7 @@ With 8 tools across 2 servers:
 | Gateway | 419 | 63.8% |
 | Proxy | 654 | 43.5% |
 
-With 258 tools across 9 servers (real FS-TAM deployment):
+With 258 tools across 9 servers (real-world deployment example):
 
 | Mode | Estimated Savings |
 |------|-------------------|
@@ -283,7 +283,7 @@ flowchart TD
 Servers can filter tools via `--include-tools`:
 ```json
 {
-  "command": "aws-sentral-mcp",
+  "command": "brave-search",
   "args": ["--include-tools", "search_accounts,get_account_details,..."]
 }
 ```
