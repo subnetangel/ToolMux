@@ -1,13 +1,13 @@
-# ToolMux v2.2
+# ToolMux v2.3
 
 **Efficient MCP server aggregation with FastMCP 3.x foundation**
 
-ToolMux proxies multiple MCP (Model Context Protocol) servers through a single interface, reducing token overhead while maintaining full tool access. It supports three operating modes optimized for different use cases.
+ToolMux proxies multiple MCP (Model Context Protocol) servers through a single interface, reducing token overhead while maintaining full tool access. It supports five operating modes optimized for different use cases.
 
 ## Features
 
 - **FastMCP 3.x Foundation** — Proper MCP protocol compliance via FastMCP framework
-- **Three Operating Modes** — Meta (80%+ savings), Gateway (60%+ savings), Proxy (native fastmcp)
+- **Five Operating Modes** — Meta (80%+ savings), Gateway (60%+ savings), Proxy (native fastmcp), Search (85%+ savings), Code (90%+ savings)
 - **Native Proxy Mode** — Uses fastmcp 3.0's `create_proxy()` for true transparent proxying with session isolation and MCP feature forwarding
 - **CondenseTransform** — Token optimization via fastmcp's Transform system: condensed descriptions/schemas in tools/list, full details on demand via helper tools
 - **Smart Description Condensation** — First-sentence extraction with filler phrase removal
@@ -93,15 +93,13 @@ ToolMux offers three modes that trade off between token savings and tool transpa
 
 ### Mode Comparison
 
-| | Gateway (default) | Meta | Proxy |
-|---|---|---|---|
-| **Token savings** | ~60-85% | ~80-93% | ~69% |
-| **tools/list size** | 1 tool per server + helpers | 5 meta-tools | All backend tools (condensed) |
-| **Tool invocation** | `server(tool="name", arguments={...})` | `invoke(name="name", args={...})` | `tool_name(param="value")` |
-| **Backend init** | BackendManager (parallel threads) | BackendManager (parallel threads) | fastmcp `create_proxy()` |
-| **Session isolation** | Shared subprocess per server | Shared subprocess per server | Persistent sessions, reused across calls (fastmcp 3.1.1+) |
-| **MCP feature forwarding** | No (stdio relay) | No (stdio relay) | Yes (sampling, elicitation, logging, progress) |
-| **Best for** | Balanced savings + usability | Maximum savings, many servers | Full MCP compliance, advanced features |
+| | Gateway (default) | Meta | Proxy | Search (new) | Code (new) |
+|---|---|---|---|---|---|
+| **Token savings** | ~60-85% | ~80-93% | ~69% | ~85-95% | ~90-97% |
+| **tools/list size** | 1 tool per server + helpers | 5 meta-tools | All backend tools (condensed) | 2 synthetic + helpers | 3 synthetic + helpers |
+| **Tool invocation** | `server(tool="name", arguments={...})` | `invoke(name="name", args={...})` | `tool_name(param="value")` | `call_tool(name="name", arguments={...})` | `execute(code="await call_tool(...)")` |
+| **Backend init** | BackendManager (parallel threads) | BackendManager (parallel threads) | fastmcp `create_proxy()` | fastmcp `create_proxy()` | fastmcp `create_proxy()` |
+| **Best for** | Balanced savings + usability | Maximum savings, many servers | Full MCP compliance, advanced features | Large catalogs (100+ tools) | Multi-step workflows |
 
 ### Gateway Mode (Default) — ~60-85% Token Savings
 
@@ -194,6 +192,55 @@ Call directly: echo_tool(message="hello")
 
 **Token savings mechanism:** All tools appear in `tools/list` (unlike gateway/meta), but descriptions are condensed from paragraphs to single sentences and schemas are stripped to names/types/required. The LLM calls `list_all_tools()` once to get full descriptions, then calls tools directly.
 
+### Search Mode — ~85-95% Token Savings
+
+Uses FastMCP's `BM25SearchTransform` to replace the full tool catalog with ranked search. The LLM discovers tools by querying `search_tools(query="what I need")` and gets back only the top-k relevant results. Execution via `call_tool(name, arguments)`.
+
+**How it works:**
+1. Same per-server proxy setup as proxy mode (error isolation, session persistence)
+2. `BM25SearchTransform` intercepts `tools/list` — replaces all backend tools with `search_tools` and `call_tool`
+3. BM25 indexes tool names, descriptions, and parameter names for natural language ranking
+4. Helper tools (`list_all_tools`, `get_tool_schema`, `get_tool_count`) bypass the transform for full catalog access
+
+```
+tools/list returns:
+  - search_tools: Find tools by natural language query (BM25 ranked)
+  - call_tool: Execute any tool by name
+  - list_all_tools: Full catalog grouped by server
+  - get_tool_schema: Full parameter details
+  - get_tool_count: Tool count statistics
+  - manage_servers: Backend management
+
+Workflow: search_tools("read file") → call_tool("filesystem_read_file", {"path": "..."})
+```
+
+**Token savings mechanism:** The LLM never sees tools it doesn't need. A search for "calendar" against 258 tools returns ~10 relevant results (~400 tokens) instead of the full catalog (~5,000 tokens).
+
+### Code Mode — ~90-97% Token Savings
+
+Uses FastMCP's experimental `CodeMode` transform for sandboxed multi-step execution. The LLM discovers tools via BM25 search, then writes Python code that chains multiple `call_tool()` calls in a sandbox. Intermediate results stay in the sandbox — only the final result enters the context window.
+
+**How it works:**
+1. Same per-server proxy setup as proxy mode
+2. `CodeMode` replaces tools with `search`, `get_schema`, and `execute`
+3. `execute(code)` runs Python in a pydantic-monty sandbox with `call_tool()` available
+4. Multiple tool calls can be chained in a single `execute()` invocation
+5. Helper tools bypass the transform for full catalog access
+
+```
+tools/list returns:
+  - search: Find tools by query (BM25 ranked, with detail levels)
+  - get_schema: Get parameter details for specific tools
+  - execute: Run Python code with call_tool() in sandbox
+  - list_all_tools: Full catalog grouped by server
+  - get_tool_count: Tool count statistics
+  - manage_servers: Backend management
+
+Workflow: search("calendar") → get_schema(["calendar_view"]) → execute("result = await call_tool(...)")
+```
+
+**Token savings mechanism:** Multi-step workflows execute in one round-trip. Intermediate results (e.g., raw API responses passed between tools) never enter the context window — they exist only inside the sandbox.
+
 ## Shared Features
 
 ### Progressive Disclosure
@@ -270,7 +317,7 @@ If a fix is found, it's persisted back to `mcp.json` so it only happens once.
 toolmux [OPTIONS]
 
 Options:
-  --mode {gateway,meta,proxy}  Operating mode (default: gateway)
+  --mode {gateway,meta,proxy,search,code}  Operating mode (default: gateway)
   --config PATH                Path to mcp.json config file
   --version                    Print version and exit
   --list-servers               List configured servers and exit
@@ -318,7 +365,7 @@ Options:
 MCP Client (Agent/IDE)
     ↕ stdio JSON-RPC
 FastMCP Server (ToolMux)
-    ├── Mode Router → meta | gateway | proxy
+    ├── Mode Router → meta | gateway | proxy | search | code
     │
     ├── Gateway/Meta Mode
     │   ├── BackendManager (parallel init, tool routing)
@@ -327,12 +374,25 @@ FastMCP Server (ToolMux)
     │   ├── Self-Healing Bundle Resolution
     │   └── manage_servers + optimize_descriptions
     │
-    └── Proxy Mode (fastmcp native)
+    ├── Proxy Mode (fastmcp native)
+    │   ├── create_proxy(mcpServers config)
+    │   ├── CondenseTransform (token optimization)
+    │   ├── Helper tools (list_all_tools, get_tool_schema, get_tool_count)
+    │   ├── manage_servers
+    │   └── Session isolation + MCP feature forwarding
+    │
+    ├── Search Mode (fastmcp native)
+    │   ├── create_proxy(mcpServers config)
+    │   ├── BM25SearchTransform (replaces catalog with search_tools + call_tool)
+    │   ├── Helper tools (list_all_tools, get_tool_schema, get_tool_count)
+    │   └── manage_servers
+    │
+    └── Code Mode (fastmcp native)
         ├── create_proxy(mcpServers config)
-        ├── CondenseTransform (token optimization)
-        ├── Helper tools (list_all_tools, get_tool_schema, get_tool_count)
-        ├── manage_servers
-        └── Session isolation + MCP feature forwarding
+        ├── CodeMode transform (search + get_schema + execute sandbox)
+        ├── pydantic-monty sandbox (intermediate results stay in sandbox)
+        ├── Helper tools (list_all_tools, get_tool_count)
+        └── manage_servers
 ```
 
 ## Development

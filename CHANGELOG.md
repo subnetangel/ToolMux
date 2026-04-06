@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0] - 2026-04-06
+
+### Added
+- **Search mode** (`--mode search`) — BM25-ranked tool discovery via FastMCP's `BM25SearchTransform`. The LLM finds tools by natural language query instead of scanning the full catalog. Best for deployments with 100+ tools.
+- **Code mode** (`--mode code`) — Sandboxed multi-step execution via FastMCP's experimental `CodeMode`. The LLM writes Python that chains `call_tool()` calls in a pydantic-monty sandbox. Intermediate results stay in the sandbox, reducing round-trips and context usage.
+- Both new modes use the same per-server proxy infrastructure as proxy mode (error isolation, session persistence, MCP feature forwarding).
+
+### Changed
+- Version bumped from 2.2.1 to 2.3.0
+- Added `pydantic-monty<0.0.8` as a dependency (sandbox for code mode)
+- `--mode` CLI flag now accepts `search` and `code` in addition to `gateway`, `meta`, and `proxy`
+
 ## [2.2.1] - 2026-03-30
 
 ### Fixed
