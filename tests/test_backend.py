@@ -84,7 +84,7 @@ class TestHttpMcpClient:
         """HttpMcpClient should use VERSION constant."""
         client = HttpMcpClient(base_url="http://localhost:9999")
         # Can't actually connect, but verify the version is accessible
-        assert VERSION == "2.3.0"  # Keep in sync with pyproject.toml
+        assert VERSION == "2.3.1"  # Keep in sync with pyproject.toml
         client.close()
 
     def test_connection_error_handled(self):

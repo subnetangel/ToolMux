@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "toolmux"
-version = "2.3.0"
+version = "2.3.1"
 description = "Efficient MCP server aggregation with HTTP/SSE support and 98% schema token reduction"
 authors = [{name = "JP Ruiz", email = "juanpa.ruiz@gmail.com"}]
 license = "MIT"

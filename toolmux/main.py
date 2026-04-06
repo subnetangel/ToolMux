@@ -24,7 +24,7 @@ from fastmcp.server import create_proxy
 from fastmcp.server.transforms import Transform
 from fastmcp.tools import Tool
 
-VERSION = "2.3.0"
+VERSION = "2.3.1"
 
 
 def _is_client_disconnect(exc: BaseException) -> bool:
@@ -436,6 +436,7 @@ class BackendManager:
         self._init_complete = threading.Event()
         self._lock = threading.Lock()
         self._bundle_fixes: Dict[str, Dict[str, Any]] = {}  # servers fixed via bundle fallback
+        self._failed_servers: Dict[str, str] = {}  # name → error reason
 
     def initialize_all_async(self):
         """Start parallel initialization in a background thread."""
@@ -444,21 +445,41 @@ class BackendManager:
 
     def _init_all(self):
         """Initialize all backends in parallel using a thread pool."""
+        # Use the max configured timeout across all servers (default 120s)
+        max_timeout = max(
+            (cfg.get("timeout", 120000) / 1000 for cfg in self.servers.values()),
+            default=120
+        )
         try:
             with ThreadPoolExecutor(max_workers=min(10, len(self.servers) or 1)) as pool:
                 futures = {pool.submit(self._init_server, name): name
                            for name in self.servers}
-                for future in as_completed(futures, timeout=30):
+                done_names: set = set()
+                for future in as_completed(futures, timeout=max_timeout):
                     name = futures[future]
+                    done_names.add(name)
                     try:
                         tools = future.result()
                         if tools:
                             with self._lock:
                                 self.tool_cache.extend(tools)
-                    except Exception:
-                        pass  # Silent — don't write to stderr during stdio mode
+                        else:
+                            with self._lock:
+                                self._failed_servers[name] = "returned 0 tools"
+                    except Exception as e:
+                        with self._lock:
+                            self._failed_servers[name] = str(e) or "unknown error"
+                # Any futures that didn't complete in time
+                for future, name in futures.items():
+                    if name not in done_names:
+                        with self._lock:
+                            self._failed_servers[name] = f"timed out after {max_timeout}s"
         except Exception:
-            pass  # Silent
+            pass
+        # Log failures to stderr (safe — won't interfere with stdio protocol)
+        with self._lock:
+            for name, reason in self._failed_servers.items():
+                print(f"⚠ ToolMux: {name} failed to init: {reason}", file=sys.stderr)
         self._init_complete.set()
 
     def _init_server(self, server_name: str) -> List[Dict[str, Any]]:
@@ -592,6 +613,40 @@ class BackendManager:
         with self._lock:
             return list(self.tool_cache)
 
+    def get_failed_servers(self) -> Dict[str, str]:
+        with self._lock:
+            return dict(self._failed_servers)
+
+    def retry_server(self, server_name: str) -> Dict[str, Any]:
+        """Re-initialize a failed server and add its tools to the cache."""
+        if server_name not in self.servers:
+            return {"error": f"Server '{server_name}' not in config"}
+        # Kill existing process if any
+        proc = self.server_processes.pop(server_name, None)
+        if proc:
+            try:
+                if isinstance(proc, HttpMcpClient):
+                    proc.close()
+                else:
+                    proc.stdin.close()
+                    proc.terminate()
+            except Exception:
+                pass
+        # Remove old tools for this server from cache
+        with self._lock:
+            self.tool_cache = [t for t in self.tool_cache if t.get("_server") != server_name]
+            self._failed_servers.pop(server_name, None)
+        # Re-init
+        tools = self._init_server(server_name)
+        if tools:
+            with self._lock:
+                self.tool_cache.extend(tools)
+            return {"success": True, "server": server_name, "tools": len(tools)}
+        else:
+            with self._lock:
+                self._failed_servers[server_name] = "retry returned 0 tools"
+            return {"error": f"Retry failed — {server_name} returned 0 tools"}
+
     def persist_fixes(self, config: Dict[str, Any], config_path: Path) -> None:
         """Write any bundle-resolved fixes back to mcp.json so they stick."""
         if not self._bundle_fixes:
@@ -653,7 +708,8 @@ class BackendManager:
 
 # ─── Native Management Tool ───
 
-def register_manage_tool(mcp: FastMCP, config_path: Path, config: Dict[str, Any]):
+def register_manage_tool(mcp: FastMCP, config_path: Path, config: Dict[str, Any],
+                         backend: Optional["BackendManager"] = None):
     """Register manage_servers and optimize_descriptions native tools."""
 
     @mcp.tool()
@@ -663,7 +719,7 @@ def register_manage_tool(mcp: FastMCP, config_path: Path, config: Dict[str, Any]
                        description: Optional[str] = None,
                        transport: Optional[str] = None,
                        base_url: Optional[str] = None) -> str:
-        """Manage ToolMux backend MCP servers. Actions: list, add, remove, validate, test.
+        """Manage ToolMux backend MCP servers. Actions: list, add, remove, validate, test, retry.
 
         Examples:
           manage_servers(action="list")
@@ -671,18 +727,30 @@ def register_manage_tool(mcp: FastMCP, config_path: Path, config: Dict[str, Any]
           manage_servers(action="remove", name="my-mcp")
           manage_servers(action="validate")
           manage_servers(action="test", name="my-server")
+          manage_servers(action="retry", name="aws-sentral-mcp")
         """
         servers = config.get("servers", {})
 
         if action == "list":
+            failed = backend.get_failed_servers() if backend else {}
             entries = []
             for sname, cfg in servers.items():
                 t = cfg.get("transport", "stdio")
                 cmd = cfg.get("command", cfg.get("base_url", "?"))
-                entries.append({"name": sname, "transport": t, "command": cmd,
-                                "description": cfg.get("description", "")})
-            return json.dumps({"servers": entries, "total": len(entries),
-                               "config_path": str(config_path)}, indent=2)
+                entry = {"name": sname, "transport": t, "command": cmd,
+                         "description": cfg.get("description", "")}
+                if sname in failed:
+                    entry["status"] = "failed"
+                    entry["error"] = failed[sname]
+                else:
+                    entry["status"] = "ok"
+                entries.append(entry)
+            result: Dict[str, Any] = {"servers": entries, "total": len(entries),
+                                      "config_path": str(config_path)}
+            if failed:
+                result["failed_count"] = len(failed)
+                result["failed_servers"] = failed
+            return json.dumps(result, indent=2)
 
         elif action == "add":
             if not name:
@@ -759,8 +827,16 @@ def register_manage_tool(mcp: FastMCP, config_path: Path, config: Dict[str, Any]
             bm.shutdown()
             return json.dumps({"results": results, "total_tools": len(tools)}, indent=2)
 
+        elif action == "retry":
+            if not name:
+                return json.dumps({"error": "Required: name"})
+            if not backend:
+                return json.dumps({"error": "Retry not available in this mode (proxy/search/code use FastMCP native proxy)"})
+            result = backend.retry_server(name)
+            return json.dumps(result, indent=2)
+
         return json.dumps({"error": f"Unknown action '{action}'",
-                           "valid_actions": ["list", "add", "remove", "validate", "test"]})
+                           "valid_actions": ["list", "add", "remove", "validate", "test", "retry"]})
 
     @mcp.tool()
     def optimize_descriptions(action: str, server: Optional[str] = None,
@@ -907,7 +983,11 @@ def register_meta_tools(mcp: FastMCP, backend: BackendManager,
         for tool in tools:
             s = tool["_server"]
             by_server[s] = by_server.get(s, 0) + 1
-        return json.dumps({"total_tools": len(tools), "by_server": by_server}, indent=2)
+        result: Dict[str, Any] = {"total_tools": len(tools), "by_server": by_server}
+        failed = backend.get_failed_servers()
+        if failed:
+            result["failed_servers"] = failed
+        return json.dumps(result, indent=2)
 
     @mcp.tool()
     def list_all_tools(server: Optional[str] = None) -> str:
@@ -1330,7 +1410,11 @@ def register_gateway_tools(mcp: FastMCP, backend: BackendManager,
         for t in all_tools:
             s = t["_server"]
             by_server[s] = by_server.get(s, 0) + 1
-        return json.dumps({"total_tools": len(all_tools), "by_server": by_server}, indent=2)
+        result: Dict[str, Any] = {"total_tools": len(all_tools), "by_server": by_server}
+        failed = backend.get_failed_servers()
+        if failed:
+            result["failed_servers"] = failed
+        return json.dumps(result, indent=2)
 
     @mcp.tool()
     def list_all_tools(server: Optional[str] = None) -> str:
@@ -2012,8 +2096,8 @@ def main():
     else:
         register_gateway_tools(mcp, backend, cached_descriptions, cache_model, preloaded_tools=tools)
 
-    # Register manage_servers in all modes
-    register_manage_tool(mcp, config_path, config)
+    # Register manage_servers in all modes (pass backend for retry support)
+    register_manage_tool(mcp, config_path, config, backend=backend)
 
     try:
         mcp.run(show_banner=False)

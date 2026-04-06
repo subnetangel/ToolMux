@@ -162,7 +162,7 @@ class TestCodeMode:
 
 
 class TestVersionSync:
-    """Verify version consistency for v2.3.0."""
+    """Verify version consistency for v2.3.1."""
 
-    def test_version_is_2_3_0(self):
-        assert VERSION == "2.3.0"
+    def test_version_is_2_3_1(self):
+        assert VERSION == "2.3.1"
