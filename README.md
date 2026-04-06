@@ -13,7 +13,7 @@ ToolMux proxies multiple MCP (Model Context Protocol) servers through a single i
 - **Smart Description Condensation** — First-sentence extraction with filler phrase removal
 - **Schema Condensation** — Strips verbose extras, keeps names/types/required
 - **Progressive Disclosure** — Full descriptions via `list_all_tools()` and `get_tool_schema()`, condensed in tools/list
-- **Self-Healing Bundle Resolution** — Auto-resolves broken server configs from smithy-mcp, AIM, XDG, Claude Desktop, and Cursor bundles
+- **Self-Healing Bundle Resolution** — Auto-resolves broken server configs from mcp-registry, user bundles, XDG, Claude Desktop, and Cursor bundles
 - **Parallel Backend Init** — Thread pool (10 workers, 30s timeout) for fast startup
 - **MCP Instructions** — All modes embed instructions in the MCP `initialize` response telling the LLM to call `list_all_tools()` first
 - **LLM-Powered Description Optimization** — `optimize_descriptions` tool lets the connected LLM generate high-quality tool descriptions, replacing algorithmic condensation

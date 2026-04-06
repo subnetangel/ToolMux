@@ -346,7 +346,7 @@ Run: `python3 -m pytest tests/ -v --tb=short`
 |---|---|---|
 | 2.0.6 | 2026-02-25 | Add `list_all_tools` gateway tool |
 | 2.0.5 | 2026-02-23 | Graceful stdin EOF, version sync, pyproject sync |
-| 2.0.4 | 2026-02-22 | First-run no-cache handling, AIM toolbox binary |
+| 2.0.4 | 2026-02-22 | First-run no-cache handling, binary distribution |
 | 2.0.3 | 2026-02-22 | Cache-first startup, incremental backend init |
 | 2.0.0 | 2026-02-22 | FastMCP 3.x rewrite, three operating modes |
 

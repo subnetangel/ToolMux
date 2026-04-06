@@ -27,7 +27,6 @@ ToolMux/
 │   ├── ARCHITECTURE.md          # System design with mermaid diagrams
 │   ├── USER_GUIDE.md            # End-user documentation
 │   ├── DEVELOPER_GUIDE.md       # This file
-│   ├── PUBLISHING.md            # Build and publish workflow
 │   └── ...
 ├── scripts/
 │   └── publish.sh               # Automated build→publish for alinux/osx
