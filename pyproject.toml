@@ -48,9 +48,9 @@ server = [
 ]
 
 [project.urls]
-Homepage = "https://code.amazon.com/packages/ToolMux/trees/mainline"
-Repository = "https://code.amazon.com/packages/ToolMux"
-Issues = "https://code.amazon.com/packages/ToolMux/issues"
+Homepage = "https://github.com/subnetangel/ToolMux"
+Repository = "https://github.com/subnetangel/ToolMux"
+Issues = "https://github.com/subnetangel/ToolMux/issues"
 
 [project.scripts]
 toolmux = "toolmux.main:main"

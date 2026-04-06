@@ -1424,8 +1424,8 @@ def resolve_bundle(server_name: str) -> Optional[Dict[str, Any]]:
     """Resolve server config from installed MCP bundle/config files.
 
     Checks multiple sources in priority order to find the correct launch
-    config for a server. Supports both Amazon internal (mcp-registry/AIM)
-    and open source (Claude Desktop, Cursor, mcp.json) config formats.
+    config for a server. Supports mcp-registry bundles and standard
+    MCP config files (Claude Desktop, Cursor, XDG mcp.json).
 
     Returns a dict with 'command' and 'args' keys, or None if not found.
     """
@@ -1664,7 +1664,7 @@ def _save_config(config: Dict[str, Any], config_path: Path):
 def main():
     parser = argparse.ArgumentParser(
         description="ToolMux - MCP server aggregation with FastMCP foundation",
-        epilog="For more information, visit: https://code.amazon.com/packages/ToolMux/trees/mainline")
+        epilog="For more information, visit: https://github.com/subnetangel/ToolMux")
     parser.add_argument("--config", help="Path to MCP configuration file")
     parser.add_argument("--version", action="version", version=f"ToolMux {VERSION}")
     parser.add_argument("--mode", choices=["proxy", "meta", "gateway"],
