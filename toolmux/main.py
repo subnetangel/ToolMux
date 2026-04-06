@@ -24,7 +24,7 @@ from fastmcp.server import create_proxy
 from fastmcp.server.transforms import Transform
 from fastmcp.tools import Tool
 
-VERSION = "2.2.1"
+VERSION = "2.3.0"
 
 
 def _is_client_disconnect(exc: BaseException) -> bool:
@@ -94,6 +94,45 @@ Helper tools:
   - get_tool_schema(name="tool_name") — get full parameter details for a tool
   - get_tool_count() — get tool count statistics by server
   - manage_servers(action="list|add|remove|validate|test") — manage backend MCP servers{optimization_hint}"""
+
+INSTRUCTIONS_SEARCH = """\
+You are connected to ToolMux, an MCP tool proxy in search mode.
+
+Available tools:
+  - search_tools(query="...") — Find tools by natural language query (BM25 ranked)
+  - call_tool(name="tool_name", arguments={{...}}) — Execute any tool by name
+  - list_all_tools() — Full catalog grouped by server
+  - get_tool_schema(name="tool_name") — Get full parameter details
+  - get_tool_count() — Tool count statistics
+  - manage_servers(action="list|add|remove|validate|test") — Manage backends
+
+Workflow:
+1. search_tools(query="what you need") to discover relevant tools
+2. call_tool(name="tool_name", arguments={{...}}) to execute"""
+
+INSTRUCTIONS_CODE = """\
+You are connected to ToolMux, an MCP tool proxy in code mode.
+
+Available tools:
+  - search(query="...") — Find tools by natural language query (BM25 ranked)
+  - get_schema(tools=["tool_name"]) — Get parameter details for specific tools
+  - execute(code="...") — Run Python code that chains tool calls in a sandbox
+  - list_all_tools() — Full catalog grouped by server
+  - get_tool_count() — Tool count statistics
+  - manage_servers(action="list|add|remove|validate|test") — Manage backends
+
+Workflow:
+1. search(query="...") to discover tools
+2. get_schema(tools=["name"]) for parameter details
+3. execute(code="result = await call_tool('name', {{args}}); return result")
+
+For multi-step workflows, chain calls inside execute():
+  execute(code=\\'\\'\\'
+  data = await call_tool("read_file", {{"path": "/tmp/data.json"}})
+  processed = transform(data)
+  await call_tool("write_file", {{"path": "/tmp/out.json", "content": processed}})
+  return {{"status": "done"}}
+  \\'\\'\\'\\')"""
 
 
 # ─── Pure Functions ───
@@ -1087,6 +1126,173 @@ def run_proxy_native(servers: Dict[str, Dict[str, Any]], config: Dict[str, Any],
         pass
 
 
+def run_search_mode(servers: Dict[str, Dict[str, Any]], config: Dict[str, Any],
+                    config_path: Path):
+    """Run search mode using BM25SearchTransform for ranked tool discovery.
+
+    Tools are discovered via search_tools(query) and executed via call_tool(name, args).
+    Backend setup is identical to proxy mode (per-server isolation).
+    """
+    from fastmcp.server.transforms.search.bm25 import BM25SearchTransform
+
+    mcp_config = _build_proxy_mcp_config(servers)
+    instructions = INSTRUCTIONS_SEARCH
+
+    failed_servers: Dict[str, str] = {}
+    if len(mcp_config["mcpServers"]) == 1:
+        proxy = create_proxy(mcp_config, name="ToolMux",
+                             instructions=instructions, version=VERSION)
+    else:
+        proxy = FastMCP(name="ToolMux", instructions=instructions, version=VERSION)
+        for name, srv_cfg in mcp_config["mcpServers"].items():
+            try:
+                single = {"mcpServers": {name: srv_cfg}}
+                backend = create_proxy(single, name=f"Proxy-{name}")
+                proxy.mount(backend, namespace=name)
+            except Exception as e:
+                failed_servers[name] = str(e)
+                print(f"⚠ ToolMux: skipping {name}: {e}", file=sys.stderr)
+
+    proxy.add_transform(BM25SearchTransform(max_results=10))
+
+    # Helper tools bypass the search transform
+    @proxy.tool()
+    async def list_all_tools(server: Optional[str] = None) -> str:
+        """List all tool names and descriptions grouped by server. Optionally filter by server name."""
+        raw_tools = list(await proxy._list_tools())
+        by_server: Dict[str, List[Dict[str, str]]] = {}
+        for t in raw_tools:
+            tool_name = t.name
+            s = "default"
+            for srv in servers:
+                if tool_name.startswith(f"{srv}_"):
+                    s = srv
+                    break
+            if server and s != server:
+                continue
+            by_server.setdefault(s, []).append({
+                "name": tool_name, "description": t.description or ""})
+        return json.dumps({"total_tools": sum(len(v) for v in by_server.values()),
+                           "servers": {s: {"tool_count": len(tl), "tools": tl}
+                                       for s, tl in by_server.items()}}, indent=2)
+
+    @proxy.tool()
+    async def get_tool_schema(name: str) -> str:
+        """Get full description and inputSchema for a specific tool."""
+        raw_tools = list(await proxy._list_tools())
+        for t in raw_tools:
+            if t.name == name:
+                return json.dumps({"name": name, "description": t.description or "",
+                                   "input_schema": t.parameters}, indent=2)
+        return json.dumps({"error": f"Tool '{name}' not found"})
+
+    @proxy.tool()
+    async def get_tool_count() -> str:
+        """Get count of available tools by server, including any servers that failed to start."""
+        raw_tools = list(await proxy._list_tools())
+        by_server: Dict[str, int] = {}
+        for t in raw_tools:
+            s = "default"
+            for srv in servers:
+                if t.name.startswith(f"{srv}_"):
+                    s = srv
+                    break
+            by_server[s] = by_server.get(s, 0) + 1
+        result: Dict[str, Any] = {"total_tools": len(raw_tools), "by_server": by_server}
+        if failed_servers:
+            result["failed_servers"] = failed_servers
+        return json.dumps(result, indent=2)
+
+    register_manage_tool(proxy, config_path, config)
+
+    try:
+        proxy.run(show_banner=False)
+    except BaseExceptionGroup as eg:
+        if not _is_client_disconnect(eg):
+            raise
+    except (KeyboardInterrupt, SystemExit):
+        pass
+
+
+def run_code_mode(servers: Dict[str, Dict[str, Any]], config: Dict[str, Any],
+                  config_path: Path):
+    """Run code mode using CodeMode transform for sandboxed multi-step execution.
+
+    Tools are discovered via search(query) and executed via execute(code) which
+    runs Python in a pydantic-monty sandbox with call_tool() available.
+    Backend setup is identical to proxy mode (per-server isolation).
+    """
+    from fastmcp.experimental.transforms.code_mode import CodeMode
+
+    mcp_config = _build_proxy_mcp_config(servers)
+    instructions = INSTRUCTIONS_CODE
+
+    failed_servers: Dict[str, str] = {}
+    if len(mcp_config["mcpServers"]) == 1:
+        proxy = create_proxy(mcp_config, name="ToolMux",
+                             instructions=instructions, version=VERSION)
+    else:
+        proxy = FastMCP(name="ToolMux", instructions=instructions, version=VERSION)
+        for name, srv_cfg in mcp_config["mcpServers"].items():
+            try:
+                single = {"mcpServers": {name: srv_cfg}}
+                backend = create_proxy(single, name=f"Proxy-{name}")
+                proxy.mount(backend, namespace=name)
+            except Exception as e:
+                failed_servers[name] = str(e)
+                print(f"⚠ ToolMux: skipping {name}: {e}", file=sys.stderr)
+
+    proxy.add_transform(CodeMode())
+
+    # Helper tools bypass the CodeMode transform
+    @proxy.tool()
+    async def list_all_tools(server: Optional[str] = None) -> str:
+        """List all tool names and descriptions grouped by server. Optionally filter by server name."""
+        raw_tools = list(await proxy._list_tools())
+        by_server: Dict[str, List[Dict[str, str]]] = {}
+        for t in raw_tools:
+            tool_name = t.name
+            s = "default"
+            for srv in servers:
+                if tool_name.startswith(f"{srv}_"):
+                    s = srv
+                    break
+            if server and s != server:
+                continue
+            by_server.setdefault(s, []).append({
+                "name": tool_name, "description": t.description or ""})
+        return json.dumps({"total_tools": sum(len(v) for v in by_server.values()),
+                           "servers": {s: {"tool_count": len(tl), "tools": tl}
+                                       for s, tl in by_server.items()}}, indent=2)
+
+    @proxy.tool()
+    async def get_tool_count() -> str:
+        """Get count of available tools by server, including any servers that failed to start."""
+        raw_tools = list(await proxy._list_tools())
+        by_server: Dict[str, int] = {}
+        for t in raw_tools:
+            s = "default"
+            for srv in servers:
+                if t.name.startswith(f"{srv}_"):
+                    s = srv
+                    break
+            by_server[s] = by_server.get(s, 0) + 1
+        result: Dict[str, Any] = {"total_tools": len(raw_tools), "by_server": by_server}
+        if failed_servers:
+            result["failed_servers"] = failed_servers
+        return json.dumps(result, indent=2)
+
+    register_manage_tool(proxy, config_path, config)
+
+    try:
+        proxy.run(show_banner=False)
+    except BaseExceptionGroup as eg:
+        if not _is_client_disconnect(eg):
+            raise
+    except (KeyboardInterrupt, SystemExit):
+        pass
+
+
 def register_gateway_tools(mcp: FastMCP, backend: BackendManager,
                            cached_descriptions: Optional[Dict[str, Dict[str, str]]] = None,
                            cache_model: Optional[str] = None,
@@ -1667,7 +1873,7 @@ def main():
         epilog="For more information, visit: https://github.com/subnetangel/ToolMux")
     parser.add_argument("--config", help="Path to MCP configuration file")
     parser.add_argument("--version", action="version", version=f"ToolMux {VERSION}")
-    parser.add_argument("--mode", choices=["proxy", "meta", "gateway"],
+    parser.add_argument("--mode", choices=["proxy", "meta", "gateway", "search", "code"],
                         help="Operating mode (default: gateway)")
     parser.add_argument("--list-servers", action="store_true",
                         help="List configured servers and exit")
@@ -1715,6 +1921,16 @@ def main():
     # Proxy mode uses fastmcp's native create_proxy() for true transparent proxying
     if mode == "proxy":
         run_proxy_native(servers, config, config_path)
+        return
+
+    # Search mode uses BM25SearchTransform for ranked tool discovery
+    if mode == "search":
+        run_search_mode(servers, config, config_path)
+        return
+
+    # Code mode uses CodeMode transform for sandboxed multi-step execution
+    if mode == "code":
+        run_code_mode(servers, config, config_path)
         return
 
     backend = BackendManager(servers)

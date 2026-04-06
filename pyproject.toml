@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "toolmux"
-version = "2.2.1"
+version = "2.3.0"
 description = "Efficient MCP server aggregation with HTTP/SSE support and 98% schema token reduction"
 authors = [{name = "JP Ruiz", email = "juanpa.ruiz@gmail.com"}]
 license = "MIT"
@@ -33,6 +33,7 @@ dependencies = [
     "httpx>=0.24.0",
     "websockets>=11.0.0",
     "python-dotenv>=1.0.1",
+    "pydantic-monty<0.0.8",
 ]
 
 [project.optional-dependencies]
