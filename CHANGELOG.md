@@ -2,6 +2,83 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.1] - 2026-03-30
+
+### Fixed
+- **Proxy mode: single-server regression** — Single-server proxy configs now keep tools unprefixed (e.g., `echo_tool` not `myserver_echo_tool`), matching previous behavior. Multi-server configs use per-server mounting with error isolation.
+- **README** — Fixed version header (v2.1 → v2.2), corrected session isolation description to reflect persistent sessions (fastmcp 3.1.1).
+
+## [2.2.0] - 2026-03-30
+
+### Fixed
+- **Proxy mode: per-server error isolation** — Each backend is now mounted as an independent proxy. Previously, one crashing server (e.g., aws-support-troubleshooting-mcp's Redis `evalsha` error) would take down all servers in the composite. Now failures are isolated and logged; healthy servers continue serving.
+- **Proxy mode: bundle resolution** — `_build_proxy_mcp_config()` now resolves AIM bundles and mcp-registry configs when a command isn't found on PATH. Fixes servers like `aws-knowledge-mcp-server-mcp` that only exist as bundles (resolved to `uvx fastmcp run <url>`).
+- **Proxy mode: session persistence** — Bumped fastmcp minimum to 3.1.1 which fixes a bug where every tool call created a new backend connection instead of reusing sessions (fastmcp PR #3330). This was causing SAML-auth servers like `slack-mcp` to re-authenticate on every call.
+
+### Changed
+- fastmcp dependency bumped from `>=3.0.0` to `>=3.1.1`
+
+## [2.1.0] - 2026-02-27
+
+### Added
+- **`list_all_tools` gateway tool** — Enumerates all backend tool names and descriptions grouped by server. Supports optional `server` parameter to filter by server name. Uses cached descriptions when available, falls back to condensed. Returns `{total_tools, servers: {name: {tool_count, tools: [{name, description}]}}}`.
+
+### Publishing
+- Published v2.0.6 binary for alinux via Builder Toolbox
+- macOS binary pending separate publish (`./scripts/publish.sh osx`)
+
+## [2.0.5] - 2026-02-23
+
+### Fixed
+- **Stdio init hang**: Load tools from build cache on startup instead of blocking on backend init. Kiro no longer times out with -32002 connection closed.
+- **First run without cache**: Wait up to 12s for backends to init, write cache immediately. Subsequent runs load from cache instantly.
+- **Graceful stdin EOF**: Catch `anyio.ClosedResourceError` on client disconnect instead of crashing with ExceptionGroup traceback. Exit 0 instead of exit 1.
+- **Backend stderr suppression**: Redirect backend subprocess stderr to DEVNULL to prevent banner output from interfering with MCP stdio protocol.
+- **Incremental tool discovery**: Backend tools added to cache as each server finishes init, not after all complete.
+- **Clean shutdown**: Close backend stdin before terminate to prevent BrokenPipe errors.
+
+### Changed
+- AIM MCP config (`.kiro/mcp.json`) now uses `toolmux` (toolbox binary) instead of `python3 -m toolmux`
+- Version synced across `main.py` and `pyproject.toml`
+
+### Publishing
+- Published v2.0.5 binaries for both alinux and macOS via Builder Toolbox
+- Added `scripts/publish.sh` for automated build→bundle→sign→publish flow
+- S3 bucket: `s3://buildertoolbox-toolmux-us-west-2`
+- Registry: `aws-support`
+
+## [2.0.0] - 2026-02-22
+
+### Added
+- FastMCP 2.14.x as server foundation replacing hand-rolled JSON-RPC loop
+- Three operating modes: meta, proxy, gateway (default)
+- `BackendManager` class replacing `ToolMux` class for backend connection management
+- Parallel backend initialization with thread pool (max 10 workers, 30s timeout)
+- Smart description condensation with first-sentence extraction and filler phrase removal
+- Schema condensation retaining only property names, types, and required arrays
+- Progressive disclosure: full docstring on first tool invocation, full schema on errors
+- Tool name collision resolution with server-name prefixing
+- Gateway mode: one tool per server with rich sub-tool descriptions and native helper tools
+- Native tool coexistence: `get_tool_schema` and `get_tool_count` callable directly in gateway mode
+- Dynamic `instructions` field in MCP InitializeResult for each mode
+- LLM build-cache system (`--build-cache`) for optimized descriptions via Bedrock
+- Cache validation with SHA-256 config hash and per-server tool count checks
+- `--mode` CLI flag with precedence over config file
+- Property-based tests (hypothesis) for all pure functions
+- Comprehensive unit tests for version sync, build cache, module exports
+
+### Changed
+- Version bumped from 1.2.1 to 2.0.0
+- `HttpMcpClient` preserved with version bump in clientInfo
+- `load_config()` now returns full config dict (including mode, cache_model)
+- Module exports: `BackendManager` replaces `ToolMux` in `__init__.py`
+- `fastmcp` dependency updated to `>=3.0.0,<4`
+
+### Removed
+- Hand-rolled JSON-RPC stdio loop
+- `ToolMux` class (replaced by `BackendManager` + FastMCP)
+- Dumb 80-character description truncation (replaced by smart condensation)
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -51,9 +128,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Runtime Version**: All version strings now correctly report 1.1.3 in both package metadata and binary output
 
 ### Changed
-- **Repository URLs**: Updated all GitHub repository references from `jpruiz/toolmux` to `subnetangel/ToolMux`
-- **Project URLs**: Updated PyPI project URLs to point to correct GitHub repository
-- **Documentation**: Updated installation instructions and documentation links
+- **Repository URLs**: Updated all repository references to point to Amazon internal repository: `https://code.amazon.com/packages/ToolMux`
+- **Project URLs**: Updated PyPI project URLs to point to correct Amazon internal repository
+- **Documentation**: Updated installation instructions and documentation links for internal development
 
 ### Technical Details
 - Updated `pyproject.toml` project URLs (Homepage, Repository, Issues)

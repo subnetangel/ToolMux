@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "toolmux"
-version = "1.2.1"
+version = "2.2.1"
 description = "Efficient MCP server aggregation with HTTP/SSE support and 98% schema token reduction"
 authors = [{name = "JP Ruiz", email = "juanpa.ruiz@gmail.com"}]
 license = "MIT"
@@ -26,7 +26,7 @@ classifiers = [
 keywords = ["mcp", "model-context-protocol", "multiplexer", "aggregation", "toolmux", "ai", "agents", "tools"]
 
 dependencies = [
-    "fastmcp>=2.14.0,<3",
+    "fastmcp>=3.1.1,<4",
     "mcp>=1.20.0",
     "click>=8.0.0",
     "pydantic>=2.6.0",
@@ -48,9 +48,9 @@ server = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/subnetangel/ToolMux"
-Repository = "https://github.com/subnetangel/ToolMux"
-Issues = "https://github.com/subnetangel/ToolMux/issues"
+Homepage = "https://code.amazon.com/packages/ToolMux/trees/mainline"
+Repository = "https://code.amazon.com/packages/ToolMux"
+Issues = "https://code.amazon.com/packages/ToolMux/issues"
 
 [project.scripts]
 toolmux = "toolmux.main:main"
@@ -65,3 +65,6 @@ toolmux = [
     "Prompt/*.md",
     "scripts/*.sh"
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -7,3 +7,6 @@ build/
 .pytest_cache/
 *.egg
 .mypy_cache/
+build
+.hypothesis/
+bundle/

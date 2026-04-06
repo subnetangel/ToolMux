@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "toolmux": {
+      "command": "uvx",
+      "args": ["toolmux", "--config", "/Users/user/toolmux/mcp.json"],
+      "timeout": 180000,
+      "description": "ToolMux MCP server aggregator with enterprise support tools - exposes 4 meta-tools for efficient access to all backend servers including ent-support-genai-mcp and AWS tools",
+      "env": {
+        "TOOLMUX_CONFIG": "/Users/user/toolmux/mcp.json",
+        "TOOLMUX_LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}

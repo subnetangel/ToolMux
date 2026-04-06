@@ -1,191 +1,171 @@
 # ToolMux Configuration Examples
 
-This directory contains example configurations for ToolMux v1.1.1 and Q CLI agent integration.
+This directory contains **real working examples** based on actual production configurations, anonymized for security.
 
-## 🚀 Quick Start Examples
+## 📁 Available Examples
 
-### Q CLI Agent Configurations
+### `q-cli-agent-config.json`
+**Q CLI Agent Configuration**
+- **Purpose**: Complete Q CLI agent setup with ToolMux integration
+- **Location**: `~/.aws/amazonq/cli-agents/your-agent.json`
+- **Features**: Agent definition with hooks, resources, and tool allowlists
+- **Based on**: Real Q CLI agent configuration
 
-#### Simple Configuration
-**File**: `q-cli-simple.json`
+### `q-cli-toolmux-config.json`
+**Q CLI Backend Configuration**
+- **Purpose**: ToolMux backend server configuration for Q CLI
+- **Location**: Custom path (referenced by agent config)
+- **Features**: Enterprise MCP servers, AWS tools, development utilities
+- **Based on**: Real backend server configuration
+
+### `kiro-mcp-config.json`
+**Kiro IDE Configuration**
+- **Purpose**: ToolMux integration for Kiro IDE
+- **Location**: `.kiro/settings/mcp.json`
+- **Features**: IDE-optimized ToolMux setup with custom config path
+- **Based on**: Real Kiro IDE configuration
+
+### `example_mcp.json`
+**General ToolMux Configuration**
+- **Purpose**: Default ToolMux backend configuration
+- **Location**: `~/toolmux/mcp.json` (default location)
+- **Features**: Complete set of enterprise and development MCP servers
+- **Based on**: Real production configuration (anonymized)
+
+## 🚀 Quick Setup
+
+### For Q CLI
 ```bash
-# Copy and customize for basic Q CLI integration
-cp toolmux/examples/q-cli-simple.json ~/.config/q/agents/my-agent.json
+# 1. Copy agent configuration
+cp toolmux/examples/q-cli-agent-config.json ~/.aws/amazonq/cli-agents/my-toolmux-agent.json
+
+# 2. Copy backend configuration  
+cp toolmux/examples/q-cli-toolmux-config.json ~/my-toolmux-config.json
+
+# 3. Edit agent config to reference your backend config
+# Update paths and credentials as needed
 ```
 
-#### Complete Configuration  
-**File**: `q-cli-agent.json`
+### For Kiro IDE
 ```bash
-# Full-featured Q CLI agent with all ToolMux capabilities
-cp toolmux/examples/q-cli-agent.json ~/.config/q/agents/toolmux-agent.json
+# 1. Copy Kiro configuration
+cp toolmux/examples/kiro-mcp-config.json .kiro/settings/mcp.json
+
+# 2. Copy backend configuration
+cp toolmux/examples/example_mcp.json ~/toolmux/mcp.json
+
+# 3. Customize paths and credentials
 ```
 
-#### Legacy Configuration
-**File**: `example_agent_config.json`
-- Updated for v1.1.1 with `uvx toolmux` command
-- Includes hooks and resource references
+### For General Use
+```bash
+# Copy main configuration
+cp toolmux/examples/example_mcp.json ~/toolmux/mcp.json
 
-## 🔧 MCP Server Configurations
+# Edit paths and credentials
+$EDITOR ~/toolmux/mcp.json
+```
 
-### Individual Server Examples
+## 🔧 Enterprise MCP Servers Included
 
-#### Filesystem Access
-**File**: `filesystem.json`
+All examples include these real enterprise MCP servers:
+
+- **`ent-support-genai-mcp`**: AWS Enterprise Support AI tools
+- **`amazon-internal-mcp-server`**: Internal Amazon tools (amzn-mcp)
+- **`awslabs.aws-documentation-mcp-server`**: AWS documentation search
+- **`strands`**: Strands agents MCP server
+- **`builder-mcp`**: Amazon Builder tools
+- **`k2-mcp-server`**: K2 integration tools
+- **`dante-mcp-server`**: Dante integration tools
+- **`url-to-markdown`**: Convert URLs to markdown
+- **`outlook-mcp-server`**: Outlook for Mac integration
+
+## 🎯 Customization Required
+
+### 1. Update Paths
+Replace anonymized paths with your actual paths:
+```bash
+# Replace user paths
+sed -i 's|/Users/user/|/Users/yourusername/|g' ~/toolmux/mcp.json
+```
+
+### 2. Add Credentials
+Update placeholder credentials:
+- `your-quip-token-here` → Your actual Quip API token
+- `user@amazon.com` → Your actual email address
+
+### 3. Adjust Development Paths
+Update paths to match your development setup:
+- `/Users/user/dev/mcp/` → Your MCP development directory
+- `/Users/user/workplace/` → Your workplace directory
+
+### 4. Configure Server Status
+Use the `disabled` flag to control which servers are active:
 ```json
 {
-  "servers": {
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user"]
-    }
+  "server-name": {
+    "command": "...",
+    "disabled": true
   }
 }
 ```
 
-#### Web Search (Brave)
-**File**: `brave-search.json`
-```json
-{
-  "servers": {
-    "brave-search": {
-      "command": "uvx",
-      "args": ["mcp-server-brave-search"],
-      "env": {"BRAVE_API_KEY": "your-api-key"}
-    }
-  }
-}
-```
+## ✅ Testing Your Configuration
 
-#### Database Access (SQLite)
-**File**: `sqlite.json`
-```json
-{
-  "servers": {
-    "sqlite": {
-      "command": "uvx", 
-      "args": ["mcp-server-sqlite", "--db-path", "/path/to/database.sqlite"]
-    }
-  }
-}
-```
-
-### Mixed Transport Examples
-
-#### HTTP/SSE Servers
-**File**: `http-servers.json`
-- Pure HTTP MCP server configurations
-- Authentication examples
-- Timeout and header configurations
-
-#### Mixed Stdio + HTTP
-**File**: `mixed-servers.json`
-- Combines stdio and HTTP MCP servers
-- Shows ToolMux's transport flexibility
-- Real-world deployment example
-
-### IDE Integration
-
-#### Kiro IDE
-**File**: `kiro-integration.json`
-- Kiro IDE specific configuration
-- Development workflow optimization
-- Local development setup
-
-## 📋 Usage Instructions
-
-### 1. Choose Your Configuration
+### Test ToolMux Backend
 ```bash
-# For Q CLI agents
-cp toolmux/examples/q-cli-simple.json ~/.config/q/agents/
-
-# For ToolMux server configuration  
-cp toolmux/examples/mixed-servers.json ~/toolmux/mcp.json
-```
-
-### 2. Customize Settings
-Edit the copied file to:
-- Update file paths to match your system
-- Add your API keys and tokens
-- Adjust server configurations
-- Modify agent behavior
-
-### 3. Test Configuration
-```bash
-# Test ToolMux configuration
+# List configured servers
 toolmux --config ~/toolmux/mcp.json --list-servers
 
-# Test Q CLI agent
-q --agent my-agent "catalog_tools"
+# Test interactive mode
+toolmux --config ~/toolmux/mcp.json
 ```
 
-## 🎯 Configuration Tips
-
-### For Q CLI Agents
-- **Start Simple**: Use `q-cli-simple.json` first
-- **System Prompt**: Include ToolMux workflow explanation
-- **Tools**: Use `["*"]` to access all meta-tools
-- **Timeout**: Set 30+ seconds for server startup
-
-### For MCP Servers
-- **Mixed Transport**: Combine stdio + HTTP servers
-- **Environment Variables**: Use for API keys and secrets
-- **Descriptions**: Add helpful descriptions for each server
-- **Timeouts**: Adjust based on server response times
-
-### For Development
-- **Local Paths**: Use absolute paths for development
-- **Version Pinning**: Use `uvx toolmux@1.1.1` for consistency
-- **Custom Configs**: Use `--config` flag for testing
-
-## 🔍 Example Workflows
-
-### Discovery Workflow
+### Test Q CLI Integration
 ```bash
-# 1. List available tools
-catalog_tools
+# Test agent with ToolMux
+q --agent my-toolmux-agent "catalog_tools"
 
-# 2. Get tool parameters  
-get_tool_schema({"name": "read_file"})
-
-# 3. Execute tool
-invoke({"name": "read_file", "args": {"path": "/tmp/test.txt"}})
-
-# 4. Check efficiency
-get_tool_count
+# Test tool discovery
+q --agent my-toolmux-agent "get_tool_count"
 ```
 
-### Multi-Server Setup
+### Test Kiro IDE Integration
+1. Open Kiro IDE in your project
+2. Check MCP server status in IDE settings
+3. Verify ToolMux shows 4 meta-tools available
+4. Test with: "catalog_tools" command
+
+## 🆘 Troubleshooting
+
+### Common Setup Issues
+1. **Path Errors**: Ensure all `/Users/user/` paths are updated to your actual paths
+2. **Permission Errors**: Make sure MCP server executables have proper permissions
+3. **Timeout Issues**: Increase timeout values if servers are slow to start
+4. **Missing Dependencies**: Install required tools (uvx, node, python environments)
+
+### Server-Specific Requirements
+- **`ent-support-genai-mcp`**: Requires Amazon internal network access
+- **`amzn-mcp`**: Requires `amzn-mcp` command installation
+- **Node.js servers**: Require Node.js runtime and built dist files
+- **Python servers**: Require Python virtual environments and dependencies
+
+### Configuration Validation
 ```bash
-# Configure multiple servers
-cp mixed-servers.json ~/toolmux/mcp.json
+# Validate JSON syntax
+python -m json.tool ~/toolmux/mcp.json
 
-# Edit to add your servers
-$EDITOR ~/toolmux/mcp.json
-
-# Test the configuration
-toolmux --list-servers
+# Test server connectivity
+toolmux --config ~/toolmux/mcp.json --list-servers
 ```
 
 ## 📚 Additional Resources
 
 - **Main Documentation**: [README.md](../../README.md)
 - **Agent Instructions**: [AGENT_INSTRUCTIONS.md](../../AGENT_INSTRUCTIONS.md)
-- **PyPI Package**: https://pypi.org/project/toolmux/
-- **Bug Fixes**: [docs/FIX_SUMMARY.md](../../docs/FIX_SUMMARY.md)
-
-## 🆘 Troubleshooting
-
-### Common Issues
-1. **Server Not Starting**: Check command paths and permissions
-2. **API Key Errors**: Verify environment variables are set
-3. **Timeout Issues**: Increase timeout values in configuration
-4. **Tool Not Found**: Use `catalog_tools` to verify availability
-
-### Getting Help
-- Check the main [README.md](../../README.md) for installation issues
-- Review [AGENT_INSTRUCTIONS.md](../../AGENT_INSTRUCTIONS.md) for usage guidance
-- See [docs/](../../docs/) for detailed documentation
+- **Architecture Guide**: [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md)
+- **Amazon Internal Repository**: https://code.amazon.com/packages/ToolMux/trees/mainline
 
 ---
 
-*All examples are tested with ToolMux v1.1.1 and include the latest bug fixes and improvements.*
+**Note**: These examples are based on real production configurations used with ToolMux v1.1.1. All sensitive information has been anonymized for security.

@@ -1,7 +1,7 @@
 # ToolMux Dependencies
 # Note: fastmcp requires Python 3.10+, other dependencies work with Python 3.8+
 
-fastmcp>=2.14.0,<3
+fastmcp>=3.1.1,<4
 mcp>=1.20.0
 click>=8.0.0
 pydantic>=2.6.0

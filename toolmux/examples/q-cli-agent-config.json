@@ -1,0 +1,45 @@
+{
+  "name": "toolmux-agent",
+  "description": "Technical Account Manager - Strategic & Technical Excellence",
+  "prompt": null,
+  "mcpServers": {
+    "toolmux": {
+      "command": "uvx",
+      "args": ["toolmux"],
+      "timeout": 180000,
+      "description": "ToolMux MCP server aggregator - exposes 4 meta-tools for efficient access to all backend servers"
+    }
+  },
+  "tools": [
+    "*"
+  ],
+  "toolAliases": {},
+  "allowedTools": [
+    "fs_read",
+    "fs_write",
+    "execute_bash",
+    "use_aws",
+    "knowledge",
+    "catalog_tools",
+    "get_tool_schema",
+    "invoke",
+    "get_tool_count"
+  ],
+  "resources": [
+    "file://~/.config/agents/agent-instructions.md",
+    "file://~/toolmux/Prompt/AGENT_INSTRUCTIONS.md"
+  ],
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "echo '🔧 Prewarming ToolMux toolset...'",
+        "timeout_ms": 5000,
+        "max_output_size": 1024,
+        "cache_ttl_seconds": 0
+      }
+    ],
+    "userPromptSubmit": []
+  },
+  "toolsSettings": {},
+  "useLegacyMcpJson": false
+}

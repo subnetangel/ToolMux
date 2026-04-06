@@ -1,9 +1,9 @@
 """
-ToolMux - Efficient MCP server aggregation with HTTP/SSE support
-Reduces schema token overhead by 98% while maintaining full functionality
+ToolMux - MCP server aggregation with FastMCP foundation
+Three operating modes: meta, proxy, gateway (default)
 """
 
-from .main import main, ToolMux, HttpMcpClient
+from .main import main, BackendManager, HttpMcpClient, VERSION
 
-__version__ = "1.2.1"
-__all__ = ["main", "ToolMux", "HttpMcpClient"]
+__version__ = VERSION
+__all__ = ["main", "BackendManager", "HttpMcpClient"]

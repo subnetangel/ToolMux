@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "toolmux": {
+      "command": "toolmux",
+      "args": ["--mode", "gateway"],
+      "env": {},
+      "description": "ToolMux - MCP server aggregation with gateway mode. Install via: toolbox install toolmux --registry aws-support"
+    }
+  }
+}

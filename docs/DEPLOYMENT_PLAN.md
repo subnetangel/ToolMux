@@ -47,7 +47,10 @@
 
 2. **Git Installation Testing**:
    ```bash
-   uvx --from git+https://github.com/subnetangel/ToolMux toolmux
+   # For Amazon internal development
+   git clone https://code.amazon.com/packages/ToolMux
+   cd ToolMux
+   pip install -e .
    ```
 
 3. **Validation**:
@@ -98,15 +101,20 @@ ToolMux v1.1.0 - First run detected
 
 ### Alternative Approaches (Fallback Options)
 
-#### Option 2: Git Direct Install
-- **Command**: `uvx --from git+https://github.com/subnetangel/ToolMux toolmux`
-- **Use Case**: Testing, pre-release versions, development
-- **Benefits**: No PyPI dependency, can install from branches/tags
+#### Option 2: Amazon Internal Development Install
+- **Command**: 
+  ```bash
+  git clone https://code.amazon.com/packages/ToolMux
+  cd ToolMux
+  pip install -e .
+  ```
+- **Use Case**: Internal development, testing, pre-release versions
+- **Benefits**: Direct access to latest code, can install from branches
 
-#### Option 3: GitHub Releases + Wheel
-- **Command**: `uvx --from https://github.com/subnetangel/ToolMux/releases/download/v1.1.0/toolmux-1.1.0-py3-none-any.whl toolmux`
-- **Use Case**: Controlled distribution, enterprise environments
-- **Benefits**: No PyPI dependency, version control
+#### Option 3: Amazon Internal Distribution
+- **Repository**: https://code.amazon.com/packages/ToolMux/trees/mainline
+- **Use Case**: Controlled internal distribution, enterprise environments
+- **Benefits**: Version control, internal security compliance
 
 ## Documentation-First Configuration
 
@@ -241,8 +249,10 @@ toolmux
 # Install as persistent tool
 uv tool install toolmux
 
-# Install from git (development)
-uvx --from git+https://github.com/subnetangel/ToolMux toolmux
+# Install from Amazon internal repository (development)
+git clone https://code.amazon.com/packages/ToolMux
+cd ToolMux
+pip install -e .
 
 # Install specific version
 uvx toolmux@1.1.0
