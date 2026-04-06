@@ -4,7 +4,7 @@
 
 ToolMux is an MCP (Model Context Protocol) server aggregation tool that achieves ~98.65% token reduction by exposing 4 meta-tools instead of loading hundreds of individual tool schemas upfront. It supports both stdio and HTTP/SSE transports.
 
-- **Version**: 1.2.1
+- **Version**: 2.2.1
 - **License**: MIT
 - **Python**: 3.10+
 - **PyPI**: https://pypi.org/project/toolmux/
@@ -121,7 +121,7 @@ make clean                       # Remove __pycache__, .pyc, .egg-info
 ## Dependencies
 
 ### Runtime
-- `fastmcp>=2.14.0,<3` - MCP server/client framework (proxy, mount, tool transforms, schema compression)
+- `fastmcp>=3.1.1,<4` - MCP server/client framework (proxy, mount, tool transforms, schema compression)
 - `mcp>=1.20.0` - MCP protocol SDK (types, transports, session management)
 - `click>=8.0.0` - CLI interface
 - `pydantic>=2.6.0` - Data validation

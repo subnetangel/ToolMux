@@ -302,31 +302,28 @@ When multiple servers expose tools with the same name:
 2. Prefix with server name: `server-a__tool_name`
 3. Non-colliding names remain unchanged
 
-## Publishing & Distribution
+## Distribution
 
 ```mermaid
 flowchart LR
     subgraph Build
-        Code["mainline"] --> PyI["PyInstaller<br/>toolmux.spec"]
-        PyI --> Bin["dist/toolmux/"]
-    end
-    subgraph Bundle
-        Bin --> Tar["tar.gz + metadata.json<br/>(SHA256 signed)"]
+        Code["main branch"] --> Pkg["setuptools build"]
     end
     subgraph Publish
-        Tar --> S3["S3 Bucket<br/>buildertoolbox-toolmux-us-west-2"]
-        S3 --> Chan["stable channel<br/>alinux + osx"]
+        Pkg --> PyPI["PyPI<br/>pip install toolmux"]
+        Pkg --> Uvx["uvx toolmux"]
     end
     subgraph Install
-        Chan --> TB["toolbox install toolmux<br/>--registry aws-support"]
-        Chan --> AIM["aim mcp install<br/>toolmux-mcp"]
+        PyPI --> Agent["MCP Client / Agent"]
+        Uvx --> Agent
     end
 ```
 
-| Platform | S3 Path |
+| Method | Command |
 |---|---|
-| alinux | `s3://buildertoolbox-toolmux-us-west-2/tools/alinux/VERSION.tar.gz` |
-| osx | `s3://buildertoolbox-toolmux-us-west-2/tools/osx/VERSION.tar.gz` |
+| PyPI | `pip install toolmux` |
+| uvx | `uvx toolmux` |
+| Source | `git clone https://github.com/subnetangel/ToolMux && pip install -e .` |
 
 ## Test Suite
 

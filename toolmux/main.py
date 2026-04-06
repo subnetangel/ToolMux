@@ -1434,7 +1434,7 @@ def resolve_bundle(server_name: str) -> Optional[Dict[str, Any]]:
     # 1. mcp-registry bundles (genericBundle format)
     for bundle_dir in [
         home / ".config" / "smithy-mcp" / "bundles",  # mcp-registry install
-        home / ".aim" / "bundles",                      # AIM mcp install
+        home / ".aim" / "bundles",                      # user bundles
     ]:
         result = _read_generic_bundle(bundle_dir / f"{server_name}.json")
         if result:

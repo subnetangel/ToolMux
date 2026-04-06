@@ -16,11 +16,11 @@ ToolMux is an MCP (Model Context Protocol) server aggregator. It sits between an
 ## Installation
 
 ```bash
-# Option 1: Builder Toolbox (recommended)
-toolbox install toolmux --registry aws-support
+# Via PyPI
+pip install toolmux
 
-# Option 2: AIM MCP Registry
-aim mcp install toolmux-mcp
+# Via uvx (recommended, no install needed)
+uvx toolmux
 
 # Verify
 toolmux --version
@@ -119,7 +119,7 @@ All backend tools exposed directly with condensed descriptions. Most transparent
 
 1. `--config /path/to/mcp.json` (CLI flag)
 2. `./mcp.json` (current directory)
-3. `~/shared/toolmux/mcp.json` (AgentSpaces — persists across sessions)
+3. `~/shared/toolmux/mcp.json` (shared environments — persists across sessions)
 4. `~/toolmux/mcp.json` (local installs)
 5. First run auto-creates `~/shared/toolmux/mcp.json`
 
@@ -294,7 +294,7 @@ This teaches the agent tool interfaces on-demand rather than upfront.
 
 | Issue | Cause | Fix |
 |---|---|---|
-| `toolmux: command not found` | Not installed | `toolbox install toolmux --registry aws-support` |
+| `toolmux: command not found` | Not installed | `pip install toolmux` or `uvx toolmux` |
 | Timeout on startup | Backends slow to init | Cache will be built; next run is instant |
 | `Tool 'X' not found` | Backend not initialized yet | Wait a moment, retry |
 | Stale descriptions | Config changed | Delete `.toolmux_cache.json`, restart |

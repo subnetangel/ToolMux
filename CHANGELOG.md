@@ -11,9 +11,9 @@ All notable changes to this project will be documented in this file.
 ## [2.2.0] - 2026-03-30
 
 ### Fixed
-- **Proxy mode: per-server error isolation** — Each backend is now mounted as an independent proxy. Previously, one crashing server (e.g., aws-support-troubleshooting-mcp's Redis `evalsha` error) would take down all servers in the composite. Now failures are isolated and logged; healthy servers continue serving.
-- **Proxy mode: bundle resolution** — `_build_proxy_mcp_config()` now resolves AIM bundles and mcp-registry configs when a command isn't found on PATH. Fixes servers like `aws-knowledge-mcp-server-mcp` that only exist as bundles (resolved to `uvx fastmcp run <url>`).
-- **Proxy mode: session persistence** — Bumped fastmcp minimum to 3.1.1 which fixes a bug where every tool call created a new backend connection instead of reusing sessions (fastmcp PR #3330). This was causing SAML-auth servers like `slack-mcp` to re-authenticate on every call.
+- **Proxy mode: per-server error isolation** — Each backend is now mounted as an independent proxy. Previously, one crashing server (e.g., a crashing backend server) would take down all servers in the composite. Now failures are isolated and logged; healthy servers continue serving.
+- **Proxy mode: bundle resolution** — `_build_proxy_mcp_config()` now resolves mcp-registry bundles when a command isn't found on PATH. Fixes servers that only exist as bundles (resolved to `uvx fastmcp run <url>`).
+- **Proxy mode: session persistence** — Bumped fastmcp minimum to 3.1.1 which fixes a bug where every tool call created a new backend connection instead of reusing sessions (fastmcp PR #3330). This was causing authenticated servers to re-authenticate on every call.
 
 ### Changed
 - fastmcp dependency bumped from `>=3.0.0` to `>=3.1.1`
@@ -22,10 +22,6 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - **`list_all_tools` gateway tool** — Enumerates all backend tool names and descriptions grouped by server. Supports optional `server` parameter to filter by server name. Uses cached descriptions when available, falls back to condensed. Returns `{total_tools, servers: {name: {tool_count, tools: [{name, description}]}}}`.
-
-### Publishing
-- Published v2.0.6 binary for alinux via Builder Toolbox
-- macOS binary pending separate publish (`./scripts/publish.sh osx`)
 
 ## [2.0.5] - 2026-02-23
 
@@ -38,14 +34,7 @@ All notable changes to this project will be documented in this file.
 - **Clean shutdown**: Close backend stdin before terminate to prevent BrokenPipe errors.
 
 ### Changed
-- AIM MCP config (`.kiro/mcp.json`) now uses `toolmux` (toolbox binary) instead of `python3 -m toolmux`
 - Version synced across `main.py` and `pyproject.toml`
-
-### Publishing
-- Published v2.0.5 binaries for both alinux and macOS via Builder Toolbox
-- Added `scripts/publish.sh` for automated build→bundle→sign→publish flow
-- S3 bucket: `s3://buildertoolbox-toolmux-us-west-2`
-- Registry: `aws-support`
 
 ## [2.0.0] - 2026-02-22
 
@@ -128,9 +117,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Runtime Version**: All version strings now correctly report 1.1.3 in both package metadata and binary output
 
 ### Changed
-- **Repository URLs**: Updated all repository references to point to Amazon internal repository: `https://code.amazon.com/packages/ToolMux`
-- **Project URLs**: Updated PyPI project URLs to point to correct Amazon internal repository
-- **Documentation**: Updated installation instructions and documentation links for internal development
+- **Repository URLs**: Updated all repository references
+- **Project URLs**: Updated PyPI project URLs
+- **Documentation**: Updated installation instructions and documentation links
 
 ### Technical Details
 - Updated `pyproject.toml` project URLs (Homepage, Repository, Issues)

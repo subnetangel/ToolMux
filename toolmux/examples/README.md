@@ -71,7 +71,6 @@ $EDITOR ~/toolmux/mcp.json
 All examples include these real enterprise MCP servers:
 
 - **`ent-support-genai-mcp`**: AWS Enterprise Support AI tools
-- **`amazon-internal-mcp-server`**: Internal Amazon tools (amzn-mcp)
 - **`awslabs.aws-documentation-mcp-server`**: AWS documentation search
 - **`strands`**: Strands agents MCP server
 - **`builder-mcp`**: Amazon Builder tools
@@ -92,7 +91,7 @@ sed -i 's|/Users/user/|/Users/yourusername/|g' ~/toolmux/mcp.json
 ### 2. Add Credentials
 Update placeholder credentials:
 - `your-quip-token-here` → Your actual Quip API token
-- `user@amazon.com` → Your actual email address
+- `user@example.com` → Your actual email address
 
 ### 3. Adjust Development Paths
 Update paths to match your development setup:
@@ -145,8 +144,6 @@ q --agent my-toolmux-agent "get_tool_count"
 4. **Missing Dependencies**: Install required tools (uvx, node, python environments)
 
 ### Server-Specific Requirements
-- **`ent-support-genai-mcp`**: Requires Amazon internal network access
-- **`amzn-mcp`**: Requires `amzn-mcp` command installation
 - **Node.js servers**: Require Node.js runtime and built dist files
 - **Python servers**: Require Python virtual environments and dependencies
 
@@ -164,7 +161,7 @@ toolmux --config ~/toolmux/mcp.json --list-servers
 - **Main Documentation**: [README.md](../../README.md)
 - **Agent Instructions**: [AGENT_INSTRUCTIONS.md](../../AGENT_INSTRUCTIONS.md)
 - **Architecture Guide**: [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md)
-- **Amazon Internal Repository**: https://code.amazon.com/packages/ToolMux/trees/mainline
+- **Repository**: https://github.com/subnetangel/ToolMux
 
 ---
 

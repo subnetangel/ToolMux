@@ -281,30 +281,16 @@ def test_something(self, test_config):
 
 ## Publishing
 
-See [PUBLISHING.md](PUBLISHING.md) for the full build→bundle→sign→publish workflow.
-
 ### Quick Reference
 
 ```bash
 # 1. Bump version in main.py + pyproject.toml
-# 2. Commit + CR to mainline
-# 3. Build + publish
+# 2. Commit and push
+# 3. Publish to PyPI
 cd /path/to/ToolMux
-git checkout mainline && git pull
-ada credentials update --account=340458173771 --provider=isengard --role=Admin --once
-./scripts/publish.sh alinux   # from AgentSpaces
-./scripts/publish.sh osx      # from macOS
+uv build
+uv publish
 ```
-
-### Important: Symlink Handling
-
-PyInstaller output contains symlinks. The toolbox bundler rejects them. Always use:
-```bash
-cp -rL dist/toolmux/* bundle/bin/     # -L dereferences symlinks
-tar czf ... --dereference .            # tar follows symlinks
-```
-
-The `publish.sh` script handles this automatically.
 
 ## Key Design Patterns
 
@@ -374,14 +360,8 @@ Edit `build_gateway_instructions()` (L243). The instructions are generated dynam
 
 | Resource | Value |
 |---|---|
-| Repository | `ssh://git.amazon.com:2222/pkg/ToolMux` |
-| S3 Bucket | `s3://buildertoolbox-toolmux-us-west-2` |
-| AWS Account | `340458173771` (tam-ai.support.aws.dev) |
-| Registry | `aws-support` |
-| AIM MCP ID | `toolmux-mcp` |
-| Bindle | `amzn1.bindle.resource.cjhve3a4725hpgs5xiva` |
-| CTI | `AWS/Enterprise Support/aws-es-tam-genai-assistant` |
-| Team | `aws-es-tamai-assistant` |
+| Repository | `https://github.com/subnetangel/ToolMux` |
+| PyPI | `https://pypi.org/project/toolmux/` |
 
 ## Dependencies
 

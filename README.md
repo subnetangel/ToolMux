@@ -22,11 +22,16 @@ ToolMux proxies multiple MCP (Model Context Protocol) servers through a single i
 ## Installation
 
 ```bash
-# Via Builder Toolbox (recommended)
-toolbox install toolmux --registry aws-support
+# Via PyPI
+pip install toolmux
 
-# Via AIM MCP Registry
-aim mcp install toolmux-mcp
+# Via uvx (recommended, no install needed)
+uvx toolmux
+
+# From source
+git clone https://github.com/subnetangel/ToolMux.git
+cd ToolMux
+pip install -e .
 
 # Verify
 toolmux --version
@@ -68,9 +73,9 @@ toolmux --mode proxy
 toolmux --config /path/to/mcp.json
 ```
 
-### 3. Use with Kiro CLI / AIM
+### 3. Use with any MCP client
 
-Add to `.kiro/mcp.json`:
+Add to your MCP client configuration (e.g., Claude Desktop, Cursor, Kiro, VS Code):
 ```json
 {
   "mcpServers": {
@@ -251,8 +256,8 @@ The `manage_servers` tool provides runtime server management:
 When a configured server command fails or returns 0 tools, ToolMux automatically
 searches for the correct launch config in these locations (in order):
 
-1. **smithy-mcp bundles** (`~/.aim/bundles/`)
-2. **AIM MCP bundles** (`~/.aim/bundles/`)
+1. **mcp-registry bundles** (`~/.config/smithy-mcp/bundles/`)
+2. **User bundles** (`~/.aim/bundles/`)
 3. **XDG mcp config** (`~/.config/mcp/mcp.json`)
 4. **Claude Desktop** (`~/.claude/claude_desktop_config.json`)
 5. **Cursor** (`~/.cursor/mcp.json`)
@@ -279,7 +284,7 @@ Options:
 
 1. `--config` flag (explicit path)
 2. `./mcp.json` (project-local)
-3. `~/shared/toolmux/mcp.json` (AgentSpaces — persists across sessions)
+3. `~/shared/toolmux/mcp.json` (shared environments — persists across sessions)
 4. `~/toolmux/mcp.json` (local installs)
 5. First-run setup creates `~/shared/toolmux/mcp.json`
 
@@ -366,26 +371,6 @@ python3 -m pytest tests/test_token_optimization.py -v -s
 | 2.0.6 | `list_all_tools` gateway tool with server filtering and cached description support |
 | 2.0.5 | Cache-first startup (no more init timeout), graceful stdin EOF handling, stderr suppression, version sync |
 | 2.0.0 | Initial v2: FastMCP foundation, 3 operating modes, BackendManager, parallel init, smart condensation, build cache, collision resolution |
-
-## Publishing
-
-See the `toolmux-setup` skill for full publish workflow. Quick reference:
-
-```bash
-# Bump version in toolmux/main.py + pyproject.toml
-# Commit and merge to mainline
-
-# alinux (from AgentSpaces)
-ada credentials update --account=340458173771 --provider=isengard --role=Admin --once
-./scripts/publish.sh alinux
-
-# macOS (from macOS machine)
-./scripts/publish.sh osx
-
-# Verify
-toolbox install toolmux --registry aws-support
-toolmux --version
-```
 
 ## License
 

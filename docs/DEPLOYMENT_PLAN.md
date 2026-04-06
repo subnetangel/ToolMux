@@ -47,8 +47,7 @@
 
 2. **Git Installation Testing**:
    ```bash
-   # For Amazon internal development
-   git clone https://code.amazon.com/packages/ToolMux
+   git clone https://github.com/subnetangel/ToolMux.git
    cd ToolMux
    pip install -e .
    ```
@@ -100,21 +99,6 @@ ToolMux v1.1.0 - First run detected
 ```
 
 ### Alternative Approaches (Fallback Options)
-
-#### Option 2: Amazon Internal Development Install
-- **Command**: 
-  ```bash
-  git clone https://code.amazon.com/packages/ToolMux
-  cd ToolMux
-  pip install -e .
-  ```
-- **Use Case**: Internal development, testing, pre-release versions
-- **Benefits**: Direct access to latest code, can install from branches
-
-#### Option 3: Amazon Internal Distribution
-- **Repository**: https://code.amazon.com/packages/ToolMux/trees/mainline
-- **Use Case**: Controlled internal distribution, enterprise environments
-- **Benefits**: Version control, internal security compliance
 
 ## Documentation-First Configuration
 
@@ -248,11 +232,6 @@ toolmux
 ```bash
 # Install as persistent tool
 uv tool install toolmux
-
-# Install from Amazon internal repository (development)
-git clone https://code.amazon.com/packages/ToolMux
-cd ToolMux
-pip install -e .
 
 # Install specific version
 uvx toolmux@1.1.0
